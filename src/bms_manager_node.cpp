@@ -5,22 +5,23 @@
 
 serial::Serial usb_port;
 
-void rc_callback(const mavros_msgs::OverrideRCIn::ConstPtr& msg)
+void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg)
 {
-    uint16_t ch3 = msg->channels[2];
-    ROS_INFO("ch3 is: %i", ch3);
+    uint16_t ch5 = msg->channels[4];
+    ROS_INFO("ch3 is: %i", ch5);
     if (msg->channels.size() < 5) return;
 
     
-    if (ch3 < 1700) {
+    if (ch5 == 1) {
         ROS_INFO_STREAM("RC Switch ON detected — sending BMS shutdown command");
         uint8_t shutdown_cmd[] = {0xDD, 0x5A, 0xE1, 0x02, 0x00, 0x02, 0xFF, 0x1B, 0x77};
         size_t sent = usb_port.write(shutdown_cmd, sizeof(shutdown_cmd));
         ROS_INFO("sent bytes: %i", sent);
 
-    } else if (ch3 > 1300) {
-        ROS_INFO_STREAM("RC Switch OFF detected — not sending command");
-    }
+    } 
+    //else if (ch5 == 0) {
+    //    ROS_INFO_STREAM("RC Switch OFF detected — not sending command");
+    //}
 }
 
 int main(int argc, char **argv)
@@ -46,7 +47,7 @@ int main(int argc, char **argv)
 
     ROS_INFO("Port /dev/ttyUSB0 is open");
 
-    ros::Subscriber rc_sub = nh.subscribe("/mavros/rc/override", 10, rc_callback);
+    ros::Subscriber rc_sub = nh.subscribe("/mavros/rc/in", 10, rc_callback);
 
     ros::spin();
 
