@@ -7,10 +7,9 @@ serial::Serial usb_port;
 
 void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg)
 {
-    uint16_t ch10 = msg->channels[9];
-    ROS_INFO("ch3 is: %i", ch10);
     if (msg->channels.size() < 10) return;
-
+    uint16_t ch10 = msg->channels[9];
+    ROS_INFO("ch10 is: %i", ch10);
     
     if (ch10 > 1899) {
         ROS_INFO_STREAM("RC Switch ON detected — sending BMS shutdown command");
