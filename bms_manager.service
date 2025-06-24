@@ -1,0 +1,14 @@
+[Unit]
+Description=BMS Manager ROS Node
+After=network.target
+
+[Service]
+User=ubuntu
+Environment=ROS_MASTER_URI=http://localhost:11311
+Environment=ROS_PACKAGE_PATH=/home/ubuntu/catkin_ws/src:${ROS_PACKAGE_PATH}
+ExecStart=/bin/bash -c 'source /opt/ros/noetic/setup.bash && source /home/ubuntu/catkin_ws/devel/setup.bash && rosrun bms_manager bms_manager_node'
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -12,7 +12,7 @@ void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg)
     if (msg->channels.size() < 10) return;
 
     
-    if (ch10 == 1) {
+    if (ch10 > 1899) {
         ROS_INFO_STREAM("RC Switch ON detected — sending BMS shutdown command");
         uint8_t shutdown_cmd[] = {0xDD, 0x5A, 0xE1, 0x02, 0x00, 0x02, 0xFF, 0x1B, 0x77};
         size_t sent = usb_port.write(shutdown_cmd, sizeof(shutdown_cmd));
