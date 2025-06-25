@@ -25,15 +25,18 @@ bool testBMS(const std::string& port_name) {
         port.open();
         if (!port.isOpen()) return false;
 
+        const uint8_t TEST_CMD[] = {0xDD, 0xA5, 0x04, 0x00, 0xFF, 0xFC, 0x77};
         port.write(TEST_CMD, sizeof(TEST_CMD));
-        usleep(100 * 1000); // 100 ms
+        usleep(100 * 1000); // 100 мс
 
         size_t available = port.available();
-        if (available > 0) {
-            std::vector<uint8_t> buffer(available);
-            port.read(buffer, available);
-            // Простейшая проверка: ответ должен начинаться с 0xDD
-            if (buffer[0] == 0xDD) return true;
+        if (available == 35) {
+            std::vector<uint8_t> buffer(35);
+            port.read(buffer, 35);
+            // Можно дополнительно сверять начальный и конечный байты:
+            if (buffer.front() == 0xDD && buffer.back() == 0x77) {
+                return true;
+            }
         }
 
         port.close();
