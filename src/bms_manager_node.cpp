@@ -8,7 +8,7 @@
 serial::Serial usb_port;
 serial::Serial usb_port2;
 
-void tryOpen(const serial::Serial& usb_port, const std::string& port) {
+void tryOpen(serial::Serial& usb_port, const std::string& port) {
     try {
         usb_port.setPort(port.c_str());
         usb_port.setBaudrate(9600);
@@ -39,7 +39,7 @@ void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg)
             tryOpen(usb_port, "/dev/ttyUSB0");
         }
         if (usb_port2.isOpen()) {
-            sent = usb_port2.write(shutdown_cmd, sizeof(shutdown_cmd));
+            size_t sent = usb_port2.write(shutdown_cmd, sizeof(shutdown_cmd));
             ROS_INFO("sent bytes for /dev/ttyUSB2: %i", sent);
         }
         else {
