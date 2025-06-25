@@ -37,6 +37,10 @@ size_t switchOFF(serial::Serial& usb_port, const std::string& port) {
     ROS_INFO("sent bytes for %s: %i", port.c_str(), sent);
 }
 
+void timerCallback(const ros::TimerEvent&) {
+    ROS_INFO("Delay complete");
+}
+
 void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg)
 {
     
@@ -56,9 +60,7 @@ void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg)
     //}
 }
 
-void timerCallback(const ros::TimerEvent&) {
-    ROS_INFO("Delay complete");
-}
+
 
 int main(int argc, char **argv)
 {
