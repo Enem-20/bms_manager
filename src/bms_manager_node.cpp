@@ -45,7 +45,7 @@ void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg)
     
     if (ch10 > 1899) {
         ros::Time now = ros::Time::now();
-        if ((now - last_shutdown_time).toSec() < 2.0) {
+        if ((now - last_shutdown_time).toSec() < 5.0) {
             ROS_INFO("Ignoring command — wait 2 seconds between sends");
             return;
         }
