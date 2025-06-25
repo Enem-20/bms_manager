@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="bms_manager" type="bms_manager_node" name="bms_manager_node" output="screen"/>
+</launch>
