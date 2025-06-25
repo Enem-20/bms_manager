@@ -1,4 +1,4 @@
-#include <string_view>
+#include <string>
 
 #include <ros/ros.h>
 #include <mavros_msgs/RCIn.h>
@@ -8,9 +8,9 @@
 serial::Serial usb_port;
 serial::Serial usb_port2;
 
-void tryOpen(const serial::Serial& usb_port, std::string_view port) {
+void tryOpen(const serial::Serial& usb_port, const std::string& port) {
     try {
-        usb_port.setPort(port.data());
+        usb_port.setPort(port.c_str());
         usb_port.setBaudrate(9600);
         serial::Timeout to = serial::Timeout::simpleTimeout(1000);
         usb_port.setTimeout(to);
