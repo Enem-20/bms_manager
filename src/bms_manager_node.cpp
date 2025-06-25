@@ -1,5 +1,7 @@
 #include <string>
 
+#include <unistd.h>
+
 #include <ros/ros.h>
 #include <mavros_msgs/RCIn.h>
 #include <mavros_msgs/OverrideRCIn.h>
@@ -7,6 +9,18 @@
 
 serial::Serial usb_port;
 serial::Serial usb_port2;
+
+size_t switchOFF(serial::Serial& usb_port, const std::string& port) {
+    uint8_t shutdown_cmd[] = {0xDD, 0x5A, 0xE1, 0x02, 0x00, 0x02, 0xFF, 0x1B, 0x77};
+    size_t sent = 0;
+    if (usb_port.isOpen()) {
+        sent = usb_port.write(shutdown_cmd, sizeof(shutdown_cmd));
+    }
+    else {
+        tryOpen(usb_port, port);
+    }
+    ROS_INFO("sent bytes for %s: %i", sent, port.c_str());
+}
 
 void tryOpen(serial::Serial& usb_port, const std::string& port) {
     try {
@@ -29,25 +43,10 @@ void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg)
     
     if (ch10 > 1899) {
         ROS_INFO_STREAM("RC Switch ON detected — sending BMS shutdown command");
-        uint8_t shutdown_cmd[] = {0xDD, 0x5A, 0xE1, 0x02, 0x00, 0x02, 0xFF, 0x1B, 0x77};
-        if (usb_port.isOpen()) {
-            size_t sent = usb_port.write(shutdown_cmd, sizeof(shutdown_cmd));
-            ROS_INFO("sent bytes for /dev/ttyUSB0: %i", sent);
-        }
-        else {
-            ROS_INFO("sent bytes for /dev/ttyUSB0: %i", 0);
-            tryOpen(usb_port, "/dev/ttyUSB0");
-        }
-        if (usb_port2.isOpen()) {
-            size_t sent = usb_port2.write(shutdown_cmd, sizeof(shutdown_cmd));
-            ROS_INFO("sent bytes for /dev/ttyUSB2: %i", sent);
-        }
-        else {
-            ROS_INFO("sent bytes for /dev/ttyUSB2: %i", 0);
-            tryOpen(usb_port2, "/dev/ttyUSB2");
-        }
-        
-
+        size_t sentGeneral = 0;
+        sentGeneral += switchOFF(usb_port, "/dev/ttyUSB0");
+        sentGeneral += switchOFF(usb_port2, "/dev/ttyUSB2");
+        if(sentGeneral > 0) sleep(2);
     } 
     //else if (ch10 == 0) {
     //    ROS_INFO_STREAM("RC Switch OFF detected — not sending command");
