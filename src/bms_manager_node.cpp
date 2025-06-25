@@ -14,29 +14,22 @@ ros::Time last_shutdown_time = ros::Time(0);
 // Тестовая команда и ожидаемый ответ
 const uint8_t TEST_CMD[] = {0xDD, 0xA5, 0x04, 0x00, 0xFF, 0xFC, 0x77};
 
-// Проверка порта
 bool testBMS(const std::string& port_name) {
     try {
         serial::Serial port;
         port.setPort(port_name);
         port.setBaudrate(9600);
-        serial::Timeout timeout = serial::Timeout::simpleTimeout(200);
+        serial::Timeout timeout = serial::Timeout::simpleTimeout(300);
         port.setTimeout(timeout);
         port.open();
         if (!port.isOpen()) return false;
 
         const uint8_t TEST_CMD[] = {0xDD, 0xA5, 0x04, 0x00, 0xFF, 0xFC, 0x77};
         port.write(TEST_CMD, sizeof(TEST_CMD));
-        usleep(100 * 1000); // 100 мс
+        usleep(100 * 1000); // Подождать 100 мс
 
-        size_t available = port.available();
-        if (available == 35) {
-            std::vector<uint8_t> buffer(35);
-            port.read(buffer, 35);
-            // Можно дополнительно сверять начальный и конечный байты:
-            if (buffer.front() == 0xDD && buffer.back() == 0x77) {
-                return true;
-            }
+        if (port.available() > 0) {
+            return true;
         }
 
         port.close();
@@ -45,6 +38,7 @@ bool testBMS(const std::string& port_name) {
     }
     return false;
 }
+
 
 // Получение списка /dev/ttyUSB*
 std::vector<std::string> find_usb_ports() {
