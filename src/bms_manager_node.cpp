@@ -54,7 +54,6 @@ void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg)
         size_t sentGeneral = 0;
         sentGeneral += switchOFF(usb_port, "/dev/ttyUSB0");
         sentGeneral += switchOFF(usb_port2, "/dev/ttyUSB2");
-        if(sentGeneral > 0) shutdown_delay_timer = g_nh->createTimer(ros::Duration(10.0), timerCallback, true);
     } 
     //else if (ch10 == 0) {
     //    ROS_INFO_STREAM("RC Switch OFF detected — not sending command");
