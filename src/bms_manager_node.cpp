@@ -10,17 +10,7 @@
 serial::Serial usb_port;
 serial::Serial usb_port2;
 
-size_t switchOFF(serial::Serial& usb_port, const std::string& port) {
-    uint8_t shutdown_cmd[] = {0xDD, 0x5A, 0xE1, 0x02, 0x00, 0x02, 0xFF, 0x1B, 0x77};
-    size_t sent = 0;
-    if (usb_port.isOpen()) {
-        sent = usb_port.write(shutdown_cmd, sizeof(shutdown_cmd));
-    }
-    else {
-        tryOpen(usb_port, port);
-    }
-    ROS_INFO("sent bytes for %s: %i", sent, port.c_str());
-}
+
 
 void tryOpen(serial::Serial& usb_port, const std::string& port) {
     try {
@@ -32,6 +22,18 @@ void tryOpen(serial::Serial& usb_port, const std::string& port) {
     } catch (serial::IOException& e) {
         ROS_ERROR_STREAM("Unable to open the port: " << e.what());
     }
+}
+
+size_t switchOFF(serial::Serial& usb_port, const std::string& port) {
+    uint8_t shutdown_cmd[] = {0xDD, 0x5A, 0xE1, 0x02, 0x00, 0x02, 0xFF, 0x1B, 0x77};
+    size_t sent = 0;
+    if (usb_port.isOpen()) {
+        sent = usb_port.write(shutdown_cmd, sizeof(shutdown_cmd));
+    }
+    else {
+        tryOpen(usb_port, port);
+    }
+    ROS_INFO("sent bytes for %s: %i", sent, port.c_str());
 }
 
 void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg)
