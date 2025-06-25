@@ -1,3 +1,5 @@
+#include <string_view>
+
 #include <ros/ros.h>
 #include <mavros_msgs/RCIn.h>
 #include <mavros_msgs/OverrideRCIn.h>
@@ -34,7 +36,7 @@ void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg)
         }
         else {
             ROS_INFO("sent bytes for /dev/ttyUSB0: %i", 0);
-            tryOpen(usbPort, "/dev/ttyUSB0");
+            tryOpen(usb_port, "/dev/ttyUSB0");
         }
         if (usb_port2.isOpen()) {
             sent = usb_port2.write(shutdown_cmd, sizeof(shutdown_cmd));
@@ -42,7 +44,7 @@ void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg)
         }
         else {
             ROS_INFO("sent bytes for /dev/ttyUSB2: %i", 0);
-            tryOpen(usbPort2, "/dev/ttyUSB2");
+            tryOpen(usb_port2, "/dev/ttyUSB2");
         }
         
 
@@ -57,8 +59,8 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "rc_to_bms_node");
     ros::NodeHandle nh;
 
-    tryOpen(usbPort, "/dev/ttyUSB0");
-    tryOpen(usbPort2, "/dev/ttyUSB2");
+    tryOpen(usb_port, "/dev/ttyUSB0");
+    tryOpen(usb_port2, "/dev/ttyUSB2");
 
     if (!usb_port.isOpen()) {
         ROS_ERROR("Port wasn't open");
