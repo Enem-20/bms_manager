@@ -12,7 +12,6 @@ serial::Serial usb_port1;
 serial::Serial usb_port2;
 ros::Time last_shutdown_time = ros::Time(0);
 
-// Отправляем команду и ждём ответ: true, если хоть что-то пришло
 bool testPort(serial::Serial& port, const std::string& name) {
     try {
         port.setPort(name);
@@ -35,7 +34,6 @@ bool testPort(serial::Serial& port, const std::string& name) {
     }
 }
 
-// Сканируем порты и сохраняем первые два, которые откликаются
 void detectWorkingPorts() {
     std::vector<std::string> candidates = {"/dev/ttyUSB0", "/dev/ttyUSB1", "/dev/ttyUSB2", "/dev/ttyUSB3"};
     int found = 0;
@@ -57,7 +55,6 @@ void detectWorkingPorts() {
     }
 }
 
-// Отправляем команду выключения
 size_t sendShutdown(serial::Serial& port) {
     if (!port.isOpen()) return 0;
 
@@ -77,11 +74,14 @@ void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg) {
         }
         last_shutdown_time = now;
 
-        ROS_INFO("RC Switch ON detected — sending BMS shutdown command");
-        size_t sent = 0;
-        sent += sendShutdown(usb_port1);
-        sent += sendShutdown(usb_port2);
-        ROS_INFO("Sent shutdown command, total bytes: %zu", sent);
+        if (!usb_port1.isOpen() || !usb_port2.isOpen()) {
+            ROS_WARN("One or both ports closed. Rescanning...");
+            detectWorkingPorts();
+        }
+
+        ROS_INFO("Sending shutdown command...");
+        size_t sent = sendShutdown(usb_port1) + sendShutdown(usb_port2);
+        ROS_INFO("Sent %zu bytes", sent);
     }
 }
 
