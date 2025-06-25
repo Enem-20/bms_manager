@@ -10,7 +10,8 @@
 serial::Serial usb_port;
 serial::Serial usb_port2;
 
-
+ros::Timer shutdown_delay_timer;
+ros::NodeHandle* g_nh = nullptr;
 
 void tryOpen(serial::Serial& usb_port, const std::string& port) {
     try {
@@ -33,7 +34,7 @@ size_t switchOFF(serial::Serial& usb_port, const std::string& port) {
     else {
         tryOpen(usb_port, port);
     }
-    ROS_INFO("sent bytes for %s: %i", sent, port.c_str());
+    ROS_INFO("sent bytes for %s: %i", port.c_str(), sent);
 }
 
 void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg)
@@ -48,17 +49,22 @@ void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg)
         size_t sentGeneral = 0;
         sentGeneral += switchOFF(usb_port, "/dev/ttyUSB0");
         sentGeneral += switchOFF(usb_port2, "/dev/ttyUSB2");
-        if(sentGeneral > 0) sleep(2);
+        if(sentGeneral > 0) shutdown_delay_timer = g_nh->createTimer(ros::Duration(10.0), timerCallback, true);
     } 
     //else if (ch10 == 0) {
     //    ROS_INFO_STREAM("RC Switch OFF detected — not sending command");
     //}
 }
 
+void timerCallback(const ros::TimerEvent&) {
+    ROS_INFO("Delay complete");
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "rc_to_bms_node");
     ros::NodeHandle nh;
+    g_nh = &nh;
 
     tryOpen(usb_port, "/dev/ttyUSB0");
     tryOpen(usb_port2, "/dev/ttyUSB2");
