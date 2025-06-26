@@ -35,6 +35,7 @@ bool testPort(serial::Serial& port, const std::string& name) {
         port.flush();
         return len > 0;
     } catch (...) {
+        ROS_ERROR_STREAM("Cannot access port — exception.");
         return false;
     }
 }
