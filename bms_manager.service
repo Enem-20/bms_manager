@@ -5,7 +5,7 @@ After=network.target
 [Service]
 User=ubuntu
 WorkingDirectory=/home/ubuntu
-ExecStart=/bin/bash -c 'source /opt/ros/noetic/setup.bash && source /home/ubuntu/catkin_ws/devel/setup.bash && roslaunch bms_manager bms_manager.launch
+ExecStart=/bin/bash -c "source /opt/ros/noetic/setup.bash && source /home/ubuntu/catkin_ws/devel/setup.bash && roslaunch bms_manager bms_manager.launch"
 Restart=on-failure
 Environment=ROS_MASTER_URI=http://localhost:11311
 Environment=ROS_HOSTNAME=localhost
