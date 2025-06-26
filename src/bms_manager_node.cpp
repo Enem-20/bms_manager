@@ -13,11 +13,16 @@ serial::Serial usb_port2;
 ros::Time last_shutdown_time = ros::Time(0);
 
 bool testPort(serial::Serial& port, const std::string& name) {
+    ROS_INFO_STREAM("Trying to open: " << name);
     try {
         port.setPort(name);
         port.setBaudrate(9600);
         serial::Timeout t = serial::Timeout::simpleTimeout(300);
         port.setTimeout(t);
+        if (access(name.c_str(), R_OK | W_OK) != 0) {
+            ROS_ERROR_STREAM("Cannot access port " << name << " — permission denied.");
+            return false;
+        }
         port.open();
 
         if (!port.isOpen()) return false;

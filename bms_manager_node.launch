@@ -1,3 +1,9 @@
 <launch>
-  <node pkg="bms_manager" type="bms_manager_node" name="bms_manager_node" output="screen"/>
+  <node 
+    pkg="bms_manager" 
+    type="bms_manager_node" 
+    name="bms_manager_node" 
+    output="screen"
+    launch-prefix="bash -c 'ulimit -c unlimited && exec'"
+  />
 </launch>
