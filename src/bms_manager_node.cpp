@@ -34,12 +34,10 @@ bool testPort(serial::Serial& port, const std::string& name) {
 
         port.flush();
         return len > 0;
-    } catch (...) {
-        catch (const std::exception& e) {
+    } catch (const std::exception& e) {
         ROS_ERROR_STREAM("Exception: " << e.what());
         ROS_ERROR_STREAM("Errno: " << strerror(errno));
         return false;
-}
     }
 }
 
