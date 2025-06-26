@@ -24,7 +24,7 @@ bool testPort(serial::Serial& port, const std::string& name) {
             return false;
         }
         port.open();
-
+        sleep(1);
         if (!port.isOpen()) return false;
 
         uint8_t probe[] = {0xDD, 0xA5, 0x04, 0x00, 0xFF, 0xFC, 0x77};
