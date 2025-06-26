@@ -31,7 +31,7 @@ bool testPort(serial::Serial& port, const std::string& name) {
         }
         
 
-        uint8_t probe[] = {0xDD, 0xA5, 0x04, 0x00, 0xFF, 0xFC, 0x77};
+        uint8_t probe[] = {0xDD, 0xA5, 0xE1, 0x02, 0x00, 0x02, 0xFF, 0x1B, 0x77};
         port.write(probe, sizeof(probe));
         std::vector<uint8_t> response(64);
         size_t len = port.read(response, response.size());
