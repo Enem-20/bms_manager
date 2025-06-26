@@ -25,7 +25,11 @@ bool testPort(serial::Serial& port, const std::string& name) {
         }
         port.open();
         sleep(1);
-        if (!port.isOpen()) return false;
+        if (!port.isOpen()) {
+            ROS_ERROR_STREAM("Port " << name << " did not open (no exception thrown)");
+            return false;
+        }
+        
 
         uint8_t probe[] = {0xDD, 0xA5, 0x04, 0x00, 0xFF, 0xFC, 0x77};
         port.write(probe, sizeof(probe));
