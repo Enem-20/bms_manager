@@ -31,14 +31,14 @@ bool testPort(serial::Serial& port, const std::string& name) {
         }
         
 
-        uint8_t probe[] = {0xDD, 0x5A, 0xE1, 0x02, 0x00, 0x02, 0xFF, 0x1B, 0x77};
-        port.write(probe, sizeof(probe));
-        sleep(1);
+        uint8_t probe[] = {0xDD, 0xA5, 0x04, 0x00, 0xFF, 0xFC, 0x77};
+        size_t sentByteCount = port.write(probe, sizeof(probe));
+        ROS_INFO("sentByteCount: %i", sentByteCount);
         std::vector<uint8_t> response(64);
-        size_t len = port.read(response, response.size());
-
+        size_t readByteCount = port.read(response, response.size());
+        ROS_INFO("readByteCount: %i", readByteCount);
         port.flush();
-        return len > 0;
+        return readByteCount > 0;
     } catch (const std::exception& e) {
         ROS_ERROR_STREAM("Exception: " << e.what());
         ROS_ERROR_STREAM("Errno: " << strerror(errno));
