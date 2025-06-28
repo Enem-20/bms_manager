@@ -1,5 +1,5 @@
 apt-get install ros-noetic-serial                                                   -y
-cd ~/catkin_ws
+cd /home/ubuntu/catkin_ws
 
 echo MAKE
 source /opt/ros/noetic/setup.bash
