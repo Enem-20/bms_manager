@@ -1,5 +1,7 @@
-apt-get install ros-noetic-serial                                                   -y
-cd /home/ubuntu/catkin_ws
+cd /home/ubuntu/catkin_ws/src
+git clone https://github.com/wjwwood/serial.git
+cd ..
+rm -rf build devel
 
 echo MAKE
 source /opt/ros/noetic/setup.bash
