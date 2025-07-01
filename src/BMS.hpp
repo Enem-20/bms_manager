@@ -41,7 +41,7 @@ public:
     void sendBatterries();
     size_t sendShutdown();
     BMSBatteriesInfo* getBMSBatteriesInfo();
-    std::vector<float> getVoltages();
+    std::vector<uint16_t> getVoltages();
 
     bool isAccessed() const;
     bool isAnswerable() const;
@@ -57,9 +57,10 @@ private:
     ros::Timer _publishTimer;
     ros::Timer _updateTimer;
     std::vector<uint16_t> _ntcs;
-    std::vector<float> _voltages;
+    std::vector<uint16_t> _voltages;
     bool _accessed = true;
     bool _answerable = true;
+    uint8_t _seq = 0;
 };
 
 }
