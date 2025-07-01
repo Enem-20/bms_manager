@@ -1,78 +1,15 @@
 #include <string>
 #include <vector>
-#include <unistd.h>
 
 #include <ros/ros.h>
 #include <mavros_msgs/RCIn.h>
-#include <serial/serial.h>
-#include <dirent.h>
-#include <fcntl.h>
 
-serial::Serial usb_port1;
-serial::Serial usb_port2;
+#include "BMS.hpp"
+#include "BMSFactory.hpp"
+
 ros::Time last_shutdown_time = ros::Time(0);
-
-bool testPort(serial::Serial& port, const std::string& name) {
-    ROS_INFO_STREAM("Trying to open: " << name);
-    try {
-        port.setPort(name);
-        port.setBaudrate(9600);
-        serial::Timeout t = serial::Timeout::simpleTimeout(300);
-        port.setTimeout(t);
-        if (access(name.c_str(), R_OK | W_OK) != 0) {
-            ROS_ERROR_STREAM("Cannot access port " << name << " — permission denied.");
-            return false;
-        }
-        port.open();
-        sleep(1);
-        if (!port.isOpen()) {
-            ROS_ERROR_STREAM("Port " << name << " did not open (no exception thrown)");
-            return false;
-        }
-        
-
-        uint8_t probe[] = {0xDD, 0xA5, 0x04, 0x00, 0xFF, 0xFC, 0x77};
-        size_t sentByteCount = port.write(probe, sizeof(probe));
-        ROS_INFO("sentByteCount: %i", sentByteCount);
-        std::vector<uint8_t> response(64);
-        size_t readByteCount = port.read(response, response.size());
-        ROS_INFO("readByteCount: %i", readByteCount);
-        port.flush();
-        return readByteCount > 0;
-    } catch (const std::exception& e) {
-        ROS_ERROR_STREAM("Exception: " << e.what());
-        ROS_ERROR_STREAM("Errno: " << strerror(errno));
-        return false;
-    }
-}
-
-void detectWorkingPorts() {
-    std::vector<std::string> candidates = {"/dev/ttyUSB0", "/dev/ttyUSB1", "/dev/ttyUSB2", "/dev/ttyUSB3"};
-    int found = 0;
-
-    for (const auto& name : candidates) {
-        if (found == 0 && testPort(usb_port1, name)) {
-            ROS_INFO_STREAM("Found working port1: " << name);
-            found++;
-        } else if (found == 1 && testPort(usb_port2, name)) {
-            ROS_INFO_STREAM("Found working port2: " << name);
-            found++;
-        }
-        if (found == 2) break;
-    }
-
-    if (found < 2) {
-        if (!usb_port1.isOpen()) ROS_ERROR("usb_port1 not found or failed to open");
-        if (!usb_port2.isOpen()) ROS_ERROR("usb_port2 not found or failed to open");
-    }
-}
-
-size_t sendShutdown(serial::Serial& port) {
-    if (!port.isOpen()) return 0;
-
-    uint8_t shutdown_cmd[] = {0xDD, 0x5A, 0xE1, 0x02, 0x00, 0x02, 0xFF, 0x1B, 0x77};
-    return port.write(shutdown_cmd, sizeof(shutdown_cmd));
-}
+std::vector<serial::BMS*> bmses;
+ros::NodeHandle* nh = nullptr;
 
 void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg) {
     if (msg->channels.size() < 10) return;
@@ -86,27 +23,27 @@ void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg) {
         }
         last_shutdown_time = now;
 
-        if (!usb_port1.isOpen() || !usb_port2.isOpen()) {
+        if (bmses.size() < 2 || (!bmses[0]->isOpen() || !bmses[1]->isOpen())) {
             ROS_WARN("One or both ports closed. Rescanning...");
-            detectWorkingPorts();
+            BMSFactory::closeBMSes(bmses);
+            bmses = BMSFactory::scanForBMS("/dev", *nh);
         }
-
-        ROS_INFO("Sending shutdown command...");
-        size_t sent = sendShutdown(usb_port1) + sendShutdown(usb_port2);
-        ROS_INFO("Sent %zu bytes", sent);
+        else {
+            ROS_INFO("Sending shutdown command...");
+            size_t sent = bmses[0]->sendShutdown() + bmses[1]->sendShutdown();
+            ROS_INFO("Sent %zu bytes", sent);
+        }
     }
 }
 
 int main(int argc, char **argv) {
     ros::init(argc, argv, "bms_manager_node");
-    ros::NodeHandle nh;
+    nh = new ros::NodeHandle();
+    bmses = BMSFactory::scanForBMS("/dev", *nh);
 
-    detectWorkingPorts();
-
-    ros::Subscriber rc_sub = nh.subscribe("/mavros/rc/in", 10, rc_callback);
+    ros::Subscriber rc_sub = nh->subscribe("/mavros/rc/in", 10, rc_callback);
     ros::spin();
 
-    usb_port1.close();
-    usb_port2.close();
+    delete nh;
     return 0;
 }
