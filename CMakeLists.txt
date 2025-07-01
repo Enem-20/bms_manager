@@ -1,14 +1,18 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(bms_manager)
 
-add_compile_options(-std=c++14)
+
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
+  sensor_msgs
   mavros_msgs
   serial
+  mavros
 )
+
+find_package(mavlink REQUIRED)
 
 catkin_package()
 
@@ -16,7 +20,9 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(bms_manager_node src/bms_manager_node.cpp)
+add_executable(bms_manager_node src/bms_manager_node.cpp src/BMS.cpp src/BMSFactory.cpp)
+
+set_property(TARGET bms_manager_node PROPERTY CXX_STANDARD 17)
 
 target_link_libraries(bms_manager_node
   ${catkin_LIBRARIES}
