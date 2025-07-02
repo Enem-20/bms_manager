@@ -77,7 +77,7 @@ void BMS::sendBatterries() {
         bat.voltages_ext[i] = idx < _voltages.size() ? _voltages[idx] : UINT16_MAX;
     }
 
-    bat.current_battery = static_cast<int16_t>(_battInfo->current);
+    bat.current_battery = static_cast<int16_t>(_battInfo->current >> 8 | _battInfo->current << 8);
     bat.battery_remaining = static_cast<int8_t>(_battInfo->RSOC);
 
     mavlink_msg_battery_status_encode(1, MAV_COMP_ID_BATTERY, &msg, &bat);
@@ -213,7 +213,7 @@ std::vector<int16_t> BMS::parseNTCsToCentiCelsius(const uint8_t* dataPtr, size_t
                           static_cast<uint16_t>(dataPtr[i + 1] << 8);
 
         std::cout << "0.1K: " << raw_be << '\n';
-        parseNTCsToCentiCelsius(ntcData, ntcCount*2)
+        int16_t centiC = static_cast<int16_t>(raw_be*10 - 27315);
         std::cout << "centiC: " << centiC << '\n';
         result.push_back(centiC);
     }
