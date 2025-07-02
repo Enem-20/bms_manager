@@ -57,21 +57,6 @@ BMS::~BMS() {
     close();
 }
 
-int16_t BMS::calculateAverageCentiCelsius(const std::vector<int16_t>& temps)
-{
-    if (temps.empty())
-        return -271;
-
-    int64_t sum = 0;
-
-    for (int16_t temp : temps)
-        sum += temp;
-
-    int16_t average = static_cast<int16_t>(sum / temps.size());
-
-    return average;
-}
-
 void BMS::sendBatterries() {
     if (!_battInfo) return;
 
@@ -146,6 +131,7 @@ BMSBatteriesInfo* BMS::getBMSBatteriesInfo() {
     uint8_t ntcCount = _battInfo->NTCCount;
     _ntcs.clear();
     _ntcs.reserve(ntcCount);
+    std::cout << "ntcCount: " << ntcCount << '\n';
     const uint8_t* ntcData = dataPtr + sizeof(BMSBatteriesInfo);
     parseNTCsToCentiCelsius(ntcData, ntcCount*2);
 
@@ -195,6 +181,22 @@ bool BMS::isAccessed() const {
 
 bool BMS::isAnswerable() const {
     return _answerable;
+}
+
+
+int16_t BMS::calculateAverageCentiCelsius(const std::vector<int16_t>& temps)
+{
+    if (temps.empty())
+        return -271;
+
+    int64_t sum = 0;
+
+    for (int16_t temp : temps)
+        sum += temp;
+
+    int16_t average = static_cast<int16_t>(sum / temps.size());
+
+    return average;
 }
 
 std::vector<int16_t> BMS::parseNTCsToCentiCelsius(const uint8_t* dataPtr, size_t byteCount)
