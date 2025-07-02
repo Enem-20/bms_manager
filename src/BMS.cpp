@@ -77,7 +77,7 @@ void BMS::sendBatterries() {
         bat.voltages_ext[i] = idx < _voltages.size() ? _voltages[idx] : UINT16_MAX;
     }
     ROS_INFO("_battInfo->current before : %i", _battInfo->current);
-    bat.current_battery = static_cast<int16_t>(_battInfo->current >> 8 | _battInfo->current << 8);
+    bat.current_battery = static_cast<int16_t>(((_battInfo->current & 0xFF) << 8) | ((_battInfo->current >> 8) & 0xFF));
     bat.battery_remaining = static_cast<int8_t>(_battInfo->RSOC);
 
     mavlink_msg_battery_status_encode(1, MAV_COMP_ID_BATTERY, &msg, &bat);
