@@ -131,7 +131,7 @@ BMSBatteriesInfo* BMS::getBMSBatteriesInfo() {
     uint8_t ntcCount = _battInfo->NTCCount;
     _ntcs.clear();
     _ntcs.reserve(ntcCount);
-    std::cout << "ntcCount: " << ntcCount << '\n';
+    ROS_INFO("ntcCount: %i", ntcCount);
     const uint8_t* ntcData = dataPtr + sizeof(BMSBatteriesInfo);
     parseNTCsToCentiCelsius(ntcData, ntcCount*2);
 
