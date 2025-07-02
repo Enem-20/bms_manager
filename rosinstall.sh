@@ -9,6 +9,8 @@ catkin_make
 
 cp -f /home/ubuntu/catkin_ws/src/bms_manager/bms_manager.service /etc/systemd/system/bms_manager.service
 
+systemctl stop bms_manager
+
 systemctl daemon-reload
 systemctl enable bms_manager.service
 systemctl start bms_manager.service
