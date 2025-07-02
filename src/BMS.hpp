@@ -10,6 +10,7 @@
 namespace serial {
     class Serial;
 
+#pragma pack(push, 1)
 struct BMSBatteriesInfo {
     uint16_t totalVoltage;
     uint16_t current;
@@ -26,7 +27,7 @@ struct BMSBatteriesInfo {
     uint8_t batteryStringsCount;
     uint8_t NTCCount;
 };
-
+#pragma pack(pop)
 class BMS : public Serial {
 public:
     BMS(size_t id, ros::NodeHandle* nodeHandle, const std::string &port = "",
