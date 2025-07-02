@@ -14,12 +14,10 @@
 
 namespace serial {
 
-size_t BMS::counter = 4;
-
 void printHexROS(const std::vector<uint8_t>& data) {
     std::ostringstream oss;
     for (uint8_t byte : data) {
-        oss << std::hex << std::setw(2) << std::setfill('0') 
+        oss << std::hex << std::setw(2) << std::setfill('0')
             << static_cast<int>(byte) << " ";
     }
     ROS_INFO_STREAM("Data in HEX: " << oss.str());
@@ -31,12 +29,11 @@ BMS::BMS(size_t id, ros::NodeHandle* nodeHandle, const std::string &port,
           bytesize_t bytesize,
           parity_t parity,
           stopbits_t stopbits,
-          flowcontrol_t flowcontrol) 
+          flowcontrol_t flowcontrol)
     : Serial(port, baudrate, timeout, bytesize, parity, stopbits, flowcontrol)
-    , _id(counter)
+    , _id(id)
     , _nodeHandle(nodeHandle)
 {
-    ++counter;
     _publisher = nodeHandle->advertise<mavros_msgs::Mavlink>("/mavlink/to", 10);
     ROS_INFO("Before: if (access(port.c_str(), R_OK | W_OK) != 0) {");
     if (access(port.c_str(), R_OK | W_OK) != 0) {
@@ -58,8 +55,6 @@ BMS::BMS(size_t id, ros::NodeHandle* nodeHandle, const std::string &port,
 
 BMS::~BMS() {
     close();
-
-    --counter;
 }
 
 int16_t ntcToCentiCelsius(uint16_t raw) {
@@ -100,7 +95,7 @@ void BMS::sendBatterries() {
     bat.id = static_cast<uint8_t>(_id);
     bat.battery_function = MAV_BATTERY_FUNCTION_AVIONICS;
     bat.type = MAV_BATTERY_TYPE_LIPO;
-    bat.temperature = averageNTCsToCentiCelsius(_ntcs);
+    bat.temperature = 15;//averageNTCsToCentiCelsius(_ntcs);
 
     for (size_t i = 0; i < 10; ++i) {
         bat.voltages[i] = i < _voltages.size() ? _voltages[i] : UINT16_MAX;
@@ -111,7 +106,7 @@ void BMS::sendBatterries() {
         bat.voltages_ext[i] = idx < _voltages.size() ? _voltages[idx] : UINT16_MAX;
     }
 
-    bat.current_battery = static_cast<int16_t>(_battInfo->current * 100.0f);
+    bat.current_battery = 15;//static_cast<int16_t>(_battInfo->current * 100.0f);
     bat.battery_remaining = static_cast<int8_t>(_battInfo->RSOC);
 
     mavlink_msg_battery_status_encode(1, MAV_COMP_ID_BATTERY, &msg, &bat);
@@ -141,7 +136,7 @@ size_t BMS::sendShutdown()  {
 
 BMSBatteriesInfo* BMS::getBMSBatteriesInfo() {
     static BMSBatteriesInfo battInfoCopy;
-    
+
     uint8_t probe[] = {0xDD, 0xA5, 0x03, 0x00, 0xFF, 0xFD, 0x77};
     size_t sentByteCount = write(probe, sizeof(probe));
     ROS_INFO("sentByteCount: %zu", sentByteCount);
@@ -181,7 +176,7 @@ std::vector<uint16_t> BMS::getVoltages() {
     uint8_t probe[] = {0xDD, 0xA5, 0x04, 0x00, 0xFF, 0xFC, 0x77};
     size_t sentByteCount = write(probe, sizeof(probe));
     ROS_INFO("sentByteCount: %zu", sentByteCount);
-    
+
     std::vector<uint8_t> response;
     size_t readByteCount = read(response, 200);
     ROS_INFO("getVoltages readByteCount: %zu", readByteCount);
