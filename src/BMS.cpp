@@ -213,7 +213,7 @@ std::vector<int16_t> BMS::parseNTCsToCentiCelsius(const uint8_t* dataPtr, size_t
                           static_cast<uint16_t>(dataPtr[i + 1] << 8);
 
         std::cout << "0.1K: " << raw_be << '\n';
-        int16_t centiC = static_cast<int16_t>(raw_be*10 - 27315);
+        parseNTCsToCentiCelsius(ntcData, ntcCount*2)
         std::cout << "centiC: " << centiC << '\n';
         result.push_back(centiC);
     }
