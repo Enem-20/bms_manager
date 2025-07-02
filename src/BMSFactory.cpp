@@ -10,15 +10,32 @@
 
 void BMSFactory::closeBMSes(std::vector<serial::BMS*>& bmses) {
     for(serial::BMS* bms : bmses) {
-        bms->close();
+        delete bms;
     }
     bmses.clear();
 }
 
-std::vector<serial::BMS*> BMSFactory::scanForBMS(const std::string& path, ros::NodeHandle& nh) {
-    std::vector<serial::BMS*> result;
-
+std::vector<serial::BMS*> BMSFactory::scanForBMS(std::vector<serial::BMS*>& bmses, const std::string& path, ros::NodeHandle& nh) {
     std::regex tty_regex(R"(ttyUSB\d+)");
+    bool shouldClear = false;
+    for(auto bms : bmses) {
+        if(bms->isOpen()) {
+            bms->checkAnswerable();
+            if(!bms->isAnswerable()) {
+                shouldClear = true;
+            }
+                
+        }
+        else {
+            shouldClear = true;
+        }
+    }
+    if(shouldClear) {
+        for(auto bms : bmses) {
+            delete bms;
+        }
+        bmses.clear();
+    }
 
     for (const auto& entry : std::filesystem::directory_iterator(path)) {
         //ROS_INFO("Entry %s bytes", entry.path().c_str());
@@ -43,7 +60,7 @@ std::vector<serial::BMS*> BMSFactory::scanForBMS(const std::string& path, ros::N
 
             if (bms->isAccessed() && bms->isAnswerable()) {
                 ROS_INFO("[BMS] OK: %s", devicePath.c_str());
-                result.push_back(bms);
+                bmses.push_back(bms);
             } else {
                 ROS_INFO("[BMS] Skipped: %s", devicePath.c_str());
                 delete bms;
@@ -54,5 +71,5 @@ std::vector<serial::BMS*> BMSFactory::scanForBMS(const std::string& path, ros::N
         }
     }
 
-    return result;
+    return bmses;
 }

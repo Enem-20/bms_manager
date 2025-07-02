@@ -46,10 +46,11 @@ public:
 
     bool isAccessed() const;
     bool isAnswerable() const;
+    void checkAnswerable();
 private:
     int16_t calculateAverageCentiCelsius(const std::vector<int16_t>& temps);
     std::vector<int16_t> parseNTCsToCentiCelsius(const uint8_t* dataPtr, size_t byteCount);
-    void checkAnswerable();
+    
     void publishCallback(const ros::TimerEvent&);
     void updateCallback(const ros::TimerEvent&);
 

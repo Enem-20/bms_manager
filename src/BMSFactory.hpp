@@ -16,8 +16,9 @@ namespace ros {
 class BMSFactory {
 public:
     static void closeBMSes(std::vector<serial::BMS*>& bmses);
-    static std::vector<serial::BMS*> scanForBMS(const std::string& path, ros::NodeHandle& nh);
+    static std::vector<serial::BMS*> scanForBMS(std::vector<serial::BMS*>& bmses, const std::string& path, ros::NodeHandle& nh);
 private:
+    
 };
 
 #endif

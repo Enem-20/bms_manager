@@ -102,22 +102,36 @@ size_t BMS::sendShutdown()  {
     if (!isOpen()) return 0;
 
     uint8_t shutdown_cmd[] = {0xDD, 0x5A, 0xE1, 0x02, 0x00, 0x02, 0xFF, 0x1B, 0x77};
-    return write(shutdown_cmd, sizeof(shutdown_cmd));
+    size_t byteCount = 0;
+    try {
+
+    }
+    catch(...) {
+        byteCount = write(shutdown_cmd, sizeof(shutdown_cmd));
+    }
+    return byteCount;
 }
 
 BMSBatteriesInfo* BMS::getBMSBatteriesInfo() {
     static BMSBatteriesInfo battInfoCopy;
-    
     uint8_t probe[] = {0xDD, 0xA5, 0x03, 0x00, 0xFF, 0xFD, 0x77};
-    size_t sentByteCount = write(probe, sizeof(probe));
-    ROS_INFO("sentByteCount: %zu", sentByteCount);
-
+    size_t sentByteCount = 0;
+    size_t readByteCount = 0;
     std::vector<uint8_t> response;
-    size_t readByteCount = read(response, 200);
-    ROS_INFO("getBMSBatteriesInfo readByteCount: %zu", readByteCount);
-    flush();
-    printHexROS(response);
+    try { 
+        sentByteCount = write(probe, sizeof(probe));
+        ROS_INFO("sentByteCount: %zu", sentByteCount);
 
+        
+        readByteCount = read(response, 200);
+        ROS_INFO("getBMSBatteriesInfo readByteCount: %zu", readByteCount);
+        flush();
+        printHexROS(response);
+    }
+    catch(...) {
+        close();
+        return nullptr;
+    }
     if (readByteCount < 5 + sizeof(BMSBatteriesInfo)) {
         ROS_ERROR("Too short for BMSBatteriesInfo");
         return nullptr;
@@ -140,18 +154,26 @@ BMSBatteriesInfo* BMS::getBMSBatteriesInfo() {
 
 std::vector<uint16_t> BMS::getVoltages() {
     uint8_t probe[] = {0xDD, 0xA5, 0x04, 0x00, 0xFF, 0xFC, 0x77};
-    size_t sentByteCount = write(probe, sizeof(probe));
-    ROS_INFO("sentByteCount: %zu", sentByteCount);
-    
+    size_t sentByteCount = 0;
     std::vector<uint8_t> response;
-    size_t readByteCount = read(response, 200);
-    ROS_INFO("getVoltages readByteCount: %zu", readByteCount);
-    flush();
-    printHexROS(response);
-
+    size_t readByteCount = 0;
+    try { 
+        sentByteCount = write(probe, sizeof(probe));
+        ROS_INFO("sentByteCount: %zu", sentByteCount);
+        
+        
+        readByteCount = read(response, 200);
+        ROS_INFO("getVoltages readByteCount: %zu", readByteCount);
+        flush();
+        printHexROS(response);
+    }
+    catch(...) {
+        close();
+        return _voltages;
+    }
     if (readByteCount < 5) {
         ROS_ERROR("Invalid response size: %zu", readByteCount);
-        return {};
+        return _voltages;
     }
 
     uint8_t dataLength = response[3];
@@ -159,7 +181,7 @@ std::vector<uint16_t> BMS::getVoltages() {
 
     if (readByteCount < expectedSize) {
         ROS_ERROR("Response too small: %zu < %zu", readByteCount, expectedSize);
-        return {};
+        return _voltages;
     }
 
     const uint8_t* dataPtr = &response[4];
@@ -183,6 +205,24 @@ bool BMS::isAnswerable() const {
     return _answerable;
 }
 
+void BMS::checkAnswerable() {
+    try {
+        uint8_t probe[] = {0xDD, 0xA5, 0x04, 0x00, 0xFF, 0xFC, 0x77};
+        size_t sentByteCount = write(probe, sizeof(probe));
+        ROS_INFO("sentByteCount: %i", sentByteCount);
+        std::vector<uint8_t> response;
+        size_t readByteCount = read(response, 200);
+        ROS_INFO("readByteCount: %i", readByteCount);
+        flush();
+        _answerable = readByteCount > 0;
+    }
+    catch(...) {
+        close();
+        _answerable = false;
+        return;
+    }
+    
+}
 
 int16_t BMS::calculateAverageCentiCelsius(const std::vector<int16_t>& temps)
 {
@@ -219,17 +259,6 @@ std::vector<int16_t> BMS::parseNTCsToCentiCelsius(const uint8_t* dataPtr, size_t
 
     _ntcs = result;
     return _ntcs;
-}
-
-void BMS::checkAnswerable() {
-    uint8_t probe[] = {0xDD, 0xA5, 0x04, 0x00, 0xFF, 0xFC, 0x77};
-    size_t sentByteCount = write(probe, sizeof(probe));
-    ROS_INFO("sentByteCount: %i", sentByteCount);
-    std::vector<uint8_t> response;
-    size_t readByteCount = read(response, 200);
-    ROS_INFO("readByteCount: %i", readByteCount);
-    flush();
-    _answerable = readByteCount > 0;
 }
 
 void BMS::publishCallback(const ros::TimerEvent&) {

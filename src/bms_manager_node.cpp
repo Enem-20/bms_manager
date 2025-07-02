@@ -14,8 +14,7 @@ ros::NodeHandle* nh = nullptr;
 void checkBMSPorts(const ros::TimerEvent&) {
     if (bmses.size() < 2 || !bmses[0]->isOpen() || !bmses[1]->isOpen()) {
         ROS_WARN("One or both ports closed. Rescanning...");
-        BMSFactory::closeBMSes(bmses);
-        bmses = BMSFactory::scanForBMS("/dev", *nh);
+        BMSFactory::scanForBMS(bmses, "/dev", *nh);
     }
 }
 
@@ -31,12 +30,10 @@ void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg) {
         }
         last_shutdown_time = now;
 
-        if (bmses.size() >= 2 && bmses[0]->isOpen() && bmses[1]->isOpen()) {
-            ROS_INFO("Sending shutdown command...");
-            size_t sent = bmses[0]->sendShutdown() + bmses[1]->sendShutdown();
-            ROS_INFO("Sent %zu bytes", sent);
-        } else {
-            ROS_WARN("Cannot send shutdown command — ports not open");
+
+        for(auto bms : bmses) {
+            if(bms->isOpen())
+                bms->sendShutdown();
         }
     }
 }
@@ -44,11 +41,11 @@ void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg) {
 int main(int argc, char **argv) {
     ros::init(argc, argv, "bms_manager_node");
     nh = new ros::NodeHandle();
-    bmses = BMSFactory::scanForBMS("/dev", *nh);
+    BMSFactory::scanForBMS(bmses, "/dev", *nh);
 
     ros::Subscriber rc_sub = nh->subscribe("/mavros/rc/in", 10, rc_callback);
 
-    ros::Timer bms_check_timer = nh->createTimer(ros::Duration(1.0), checkBMSPorts);
+    ros::Timer bms_check_timer = nh->createTimer(ros::Duration(5.0), checkBMSPorts);
 
     ros::spin();
 
