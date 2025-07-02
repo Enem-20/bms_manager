@@ -195,8 +195,8 @@ int16_t BMS::calculateAverageCentiCelsius(const std::vector<int16_t>& temps)
         sum += temp;
 
     int16_t average = static_cast<int16_t>(sum / temps.size());
-
-    return average;
+    
+    return *std::max_element(temps.begin(), temps.end());;
 }
 
 std::vector<int16_t> BMS::parseNTCsToCentiCelsius(const uint8_t* dataPtr, size_t byteCount)
