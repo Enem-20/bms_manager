@@ -76,7 +76,7 @@ void BMS::sendBatterries() {
         size_t idx = 10 + i;
         bat.voltages_ext[i] = idx < _voltages.size() ? _voltages[idx] : UINT16_MAX;
     }
-
+    ROS_INFO("_battInfo->current before : %i", _battInfo->current);
     bat.current_battery = static_cast<int16_t>(_battInfo->current >> 8 | _battInfo->current << 8);
     bat.battery_remaining = static_cast<int8_t>(_battInfo->RSOC);
 
@@ -209,8 +209,7 @@ std::vector<int16_t> BMS::parseNTCsToCentiCelsius(const uint8_t* dataPtr, size_t
 
     for (size_t i = 0; i < byteCount; i += 2)
     {
-        uint16_t raw_be = static_cast<uint16_t>(dataPtr[i]) |
-                          static_cast<uint16_t>(dataPtr[i + 1] << 8);
+        uint16_t raw_be = (static_cast<uint16_t>(dataPtr[i]) << 8) | static_cast<uint16_t>(dataPtr[i + 1]);
 
         std::cout << "0.1K: " << raw_be << '\n';
         int16_t centiC = static_cast<int16_t>(raw_be*10 - 27315);
