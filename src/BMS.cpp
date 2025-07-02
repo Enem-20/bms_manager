@@ -104,10 +104,10 @@ size_t BMS::sendShutdown()  {
     uint8_t shutdown_cmd[] = {0xDD, 0x5A, 0xE1, 0x02, 0x00, 0x02, 0xFF, 0x1B, 0x77};
     size_t byteCount = 0;
     try {
-
+        byteCount = write(shutdown_cmd, sizeof(shutdown_cmd));
     }
     catch(...) {
-        byteCount = write(shutdown_cmd, sizeof(shutdown_cmd));
+        close();
     }
     return byteCount;
 }
