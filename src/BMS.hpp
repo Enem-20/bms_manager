@@ -46,6 +46,8 @@ public:
     bool isAccessed() const;
     bool isAnswerable() const;
 private:
+    int16_t calculateAverageCentiCelsius(const std::vector<int16_t>& temps);
+    std::vector<int16_t> parseNTCsToCentiCelsius(const uint8_t* dataPtr, size_t byteCount);
     void checkAnswerable();
     void publishCallback(const ros::TimerEvent&);
     void updateCallback(const ros::TimerEvent&);
@@ -56,12 +58,11 @@ private:
     ros::Publisher _publisher;
     ros::Timer _publishTimer;
     ros::Timer _updateTimer;
-    std::vector<uint16_t> _ntcs;
+    std::vector<int16_t> _ntcs;
     std::vector<uint16_t> _voltages;
     bool _accessed = true;
     bool _answerable = true;
     uint8_t _seq = 0;
-    static size_t counter;
 };
 
 }

@@ -17,7 +17,7 @@ namespace serial {
 void printHexROS(const std::vector<uint8_t>& data) {
     std::ostringstream oss;
     for (uint8_t byte : data) {
-        oss << std::hex << std::setw(2) << std::setfill('0')
+        oss << std::hex << std::setw(2) << std::setfill('0') 
             << static_cast<int>(byte) << " ";
     }
     ROS_INFO_STREAM("Data in HEX: " << oss.str());
@@ -29,7 +29,7 @@ BMS::BMS(size_t id, ros::NodeHandle* nodeHandle, const std::string &port,
           bytesize_t bytesize,
           parity_t parity,
           stopbits_t stopbits,
-          flowcontrol_t flowcontrol)
+          flowcontrol_t flowcontrol) 
     : Serial(port, baudrate, timeout, bytesize, parity, stopbits, flowcontrol)
     , _id(id)
     , _nodeHandle(nodeHandle)
@@ -57,33 +57,19 @@ BMS::~BMS() {
     close();
 }
 
-int16_t ntcToCentiCelsius(uint16_t raw) {
-    if (raw < 1500 || raw > 4000) {
-        return INT16_MAX;
-    }
+int16_t BMS::calculateAverageCentiCelsius(const std::vector<int16_t>& temps)
+{
+    if (temps.empty())
+        return -271;
 
-    int32_t deciC = static_cast<int32_t>(raw) - 2731;
-    int32_t centiC = deciC * 10;
+    int64_t sum = 0;
 
-    if (centiC > INT16_MAX || centiC < INT16_MIN) {
-        return INT16_MAX;
-    }
+    for (int16_t temp : temps)
+        sum += temp;
 
-    return static_cast<int16_t>(centiC);
-}
+    int16_t average = static_cast<int16_t>(sum / temps.size());
 
-int16_t averageNTCsToCentiCelsius(const std::vector<uint16_t>& ntc_values) {
-    if (ntc_values.empty()) {
-        return INT16_MAX;
-    }
-
-    int32_t sum = 0;
-    for (uint16_t raw : ntc_values) {
-        sum += static_cast<int32_t>(raw);
-    }
-
-    int32_t avg_raw = sum / static_cast<int32_t>(ntc_values.size());
-    return ntcToCentiCelsius(static_cast<uint16_t>(avg_raw));
+    return average;
 }
 
 void BMS::sendBatterries() {
@@ -95,7 +81,7 @@ void BMS::sendBatterries() {
     bat.id = static_cast<uint8_t>(_id);
     bat.battery_function = MAV_BATTERY_FUNCTION_AVIONICS;
     bat.type = MAV_BATTERY_TYPE_LIPO;
-    bat.temperature = 15;//averageNTCsToCentiCelsius(_ntcs);
+    bat.temperature = calculateAverageCentiCelsius(_ntcs);
 
     for (size_t i = 0; i < 10; ++i) {
         bat.voltages[i] = i < _voltages.size() ? _voltages[i] : UINT16_MAX;
@@ -106,7 +92,7 @@ void BMS::sendBatterries() {
         bat.voltages_ext[i] = idx < _voltages.size() ? _voltages[idx] : UINT16_MAX;
     }
 
-    bat.current_battery = 15;//static_cast<int16_t>(_battInfo->current * 100.0f);
+    bat.current_battery = static_cast<int16_t>(_battInfo->current);
     bat.battery_remaining = static_cast<int8_t>(_battInfo->RSOC);
 
     mavlink_msg_battery_status_encode(1, MAV_COMP_ID_BATTERY, &msg, &bat);
@@ -136,7 +122,7 @@ size_t BMS::sendShutdown()  {
 
 BMSBatteriesInfo* BMS::getBMSBatteriesInfo() {
     static BMSBatteriesInfo battInfoCopy;
-
+    
     uint8_t probe[] = {0xDD, 0xA5, 0x03, 0x00, 0xFF, 0xFD, 0x77};
     size_t sentByteCount = write(probe, sizeof(probe));
     ROS_INFO("sentByteCount: %zu", sentByteCount);
@@ -160,14 +146,8 @@ BMSBatteriesInfo* BMS::getBMSBatteriesInfo() {
     uint8_t ntcCount = _battInfo->NTCCount;
     _ntcs.clear();
     _ntcs.reserve(ntcCount);
-
     const uint8_t* ntcData = dataPtr + sizeof(BMSBatteriesInfo);
-    for (uint8_t i = 0; i < ntcCount; ++i) {
-        uint16_t raw;
-        memcpy(&raw, ntcData + i * 2, 2);
-        raw = (raw << 8) | (raw >> 8);
-        _ntcs.push_back(raw);
-    }
+    parseNTCsToCentiCelsius(ntcData, ntcCount*2);
 
     return _battInfo;
 }
@@ -176,7 +156,7 @@ std::vector<uint16_t> BMS::getVoltages() {
     uint8_t probe[] = {0xDD, 0xA5, 0x04, 0x00, 0xFF, 0xFC, 0x77};
     size_t sentByteCount = write(probe, sizeof(probe));
     ROS_INFO("sentByteCount: %zu", sentByteCount);
-
+    
     std::vector<uint8_t> response;
     size_t readByteCount = read(response, 200);
     ROS_INFO("getVoltages readByteCount: %zu", readByteCount);
@@ -215,6 +195,27 @@ bool BMS::isAccessed() const {
 
 bool BMS::isAnswerable() const {
     return _answerable;
+}
+
+std::vector<int16_t> BMS::parseNTCsToCentiCelsius(const uint8_t* dataPtr, size_t byteCount)
+{
+    if (byteCount % 2 != 0)
+        return {};
+
+    std::vector<int16_t> result;
+    result.reserve(byteCount / 2);
+
+    for (size_t i = 0; i < byteCount; i += 2)
+    {
+        uint16_t raw_be = (static_cast<uint16_t>(dataPtr[i]) << 8) |
+                          static_cast<uint16_t>(dataPtr[i + 1]);
+
+        int16_t centiC = static_cast<int16_t>(raw_be) - 2731;
+        result.push_back(centiC);
+    }
+
+    _ntcs = result;
+    return _ntcs;
 }
 
 void BMS::checkAnswerable() {
