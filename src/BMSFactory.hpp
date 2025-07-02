@@ -18,7 +18,6 @@ public:
     static void closeBMSes(std::vector<serial::BMS*>& bmses);
     static std::vector<serial::BMS*> scanForBMS(const std::string& path, ros::NodeHandle& nh);
 private:
-    
 };
 
 #endif

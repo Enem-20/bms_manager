@@ -14,6 +14,8 @@
 
 namespace serial {
 
+size_t BMS::counter = 4;
+
 void printHexROS(const std::vector<uint8_t>& data) {
     std::ostringstream oss;
     for (uint8_t byte : data) {
@@ -31,9 +33,10 @@ BMS::BMS(size_t id, ros::NodeHandle* nodeHandle, const std::string &port,
           stopbits_t stopbits,
           flowcontrol_t flowcontrol) 
     : Serial(port, baudrate, timeout, bytesize, parity, stopbits, flowcontrol)
-    , _id(id)
+    , _id(counter)
     , _nodeHandle(nodeHandle)
 {
+    ++counter;
     _publisher = nodeHandle->advertise<mavros_msgs::Mavlink>("/mavlink/to", 10);
     ROS_INFO("Before: if (access(port.c_str(), R_OK | W_OK) != 0) {");
     if (access(port.c_str(), R_OK | W_OK) != 0) {
@@ -55,6 +58,8 @@ BMS::BMS(size_t id, ros::NodeHandle* nodeHandle, const std::string &port,
 
 BMS::~BMS() {
     close();
+
+    --counter;
 }
 
 int16_t ntcToCentiCelsius(uint16_t raw) {
