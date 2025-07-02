@@ -61,6 +61,7 @@ private:
     bool _accessed = true;
     bool _answerable = true;
     uint8_t _seq = 0;
+    static size_t counter;
 };
 
 }
