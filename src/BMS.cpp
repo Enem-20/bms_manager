@@ -54,6 +54,8 @@ BMS::BMS(size_t id, ros::NodeHandle* nodeHandle, const std::string &port,
 }
 
 BMS::~BMS() {
+    _publishTimer.stop();
+    _updateTimer.stop();
     close();
 }
 
@@ -125,13 +127,14 @@ BMSBatteriesInfo* BMS::getBMSBatteriesInfo() {
     std::vector<uint8_t> response;
     try { 
         sentByteCount = write(probe, sizeof(probe));
-        OS_INFO("sentByteCount: %zu", sentByteCount);
+        ROS_INFO("sentByteCount: %zu", sentByteCount);
 
         
         readByteCount = read(response, 200);
         ROS_INFO("getBMSBatteriesInfo readByteCount: %zu", readByteCount);
         flush();
         printHexROS(response);
+    }
     catch(...) {
         close();
         return _battInfo;
