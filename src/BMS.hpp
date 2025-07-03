@@ -56,7 +56,7 @@ private:
     void publishCallback(const ros::TimerEvent&);
     void updateCallback(const ros::TimerEvent&);
 
-    BMSBatteriesInfo* _battInfo;
+    std::unique_ptr<BMSBatteriesInfo> _battInfo;
     size_t _id;
     ros::NodeHandle* _nodeHandle;
     ros::Publisher _publisher;
