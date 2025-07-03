@@ -56,6 +56,7 @@ BMS::BMS(size_t id, ros::NodeHandle* nodeHandle, const std::string &port,
 BMS::~BMS() {
     _publishTimer.stop();
     _updateTimer.stop();
+    _publisher.shutdown();
     close();
 }
 
