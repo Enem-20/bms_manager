@@ -231,6 +231,10 @@ void BMS::checkAnswerable() {
     
 }
 
+const std::string BMS::getPath() const {
+    return getPort();
+}
+
 int16_t BMS::calculateAverageCentiCelsius(const std::vector<int16_t>& temps)
 {
     if (temps.empty())

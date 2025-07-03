@@ -48,6 +48,7 @@ public:
     bool isAccessed() const;
     bool isAnswerable() const;
     void checkAnswerable();
+    const std::string getPath() const;
 private:
     int16_t calculateAverageCentiCelsius(const std::vector<int16_t>& temps);
     std::vector<int16_t> parseNTCsToCentiCelsius(const uint8_t* dataPtr, size_t byteCount);
