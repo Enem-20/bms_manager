@@ -39,6 +39,8 @@ public:
           stopbits_t stopbits = stopbits_one,
           flowcontrol_t flowcontrol = flowcontrol_none);
     ~BMS() override;
+    
+    void reconnect();
 
     void sendBatterries();
     size_t sendShutdown();

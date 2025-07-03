@@ -60,6 +60,29 @@ BMS::~BMS() {
     close();
 }
 
+void BMS::reconnect() {
+    _publishTimer.stop();
+    _updateTimer.stop();
+    close();
+    open();
+    ROS_INFO("Before: if (access(port.c_str(), R_OK | W_OK) != 0) {");
+    if (access(port.c_str(), R_OK | W_OK) != 0) {
+        ROS_ERROR_STREAM("Cannot access port " << port << " — permission denied.");
+        _accessed = false;
+    }
+    ROS_INFO("After: if (access(port.c_str(), R_OK | W_OK) != 0) {");
+    if (!isOpen()) {
+        ROS_ERROR_STREAM("Port " << port << " did not open (no exception thrown)");
+        return;
+    }
+    ROS_INFO("After: if (!isOpen()) {");
+    checkAnswerable();
+    ROS_INFO("After: checkAnswerable();");
+    updateCallback({});
+    _publishTimer.start();
+    _updateTimer.start();
+}
+
 void BMS::sendBatterries() {
     if (!_battInfo) return;
 
