@@ -121,7 +121,7 @@ size_t BMS::sendShutdown()  {
 }
 
 BMSBatteriesInfo* BMS::getBMSBatteriesInfo() {
-    static BMSBatteriesInfo battInfoCopy;
+    BMSBatteriesInfo* battInfoCopy = nullptr;
     uint8_t probe[] = {0xDD, 0xA5, 0x03, 0x00, 0xFF, 0xFD, 0x77};
     size_t sentByteCount = 0;
     size_t readByteCount = 0;
@@ -147,9 +147,9 @@ BMSBatteriesInfo* BMS::getBMSBatteriesInfo() {
 
     const uint8_t* dataPtr = &response[4];
 
-    memcpy(&battInfoCopy, dataPtr, sizeof(BMSBatteriesInfo));
-    _battInfo = &battInfoCopy;
-
+    memcpy(battInfoCopy, dataPtr, sizeof(BMSBatteriesInfo));
+    _battInfo.reset(battInfoCopy);
+    delete battInfoCopy;
     uint8_t ntcCount = _battInfo->NTCCount;
     _ntcs.clear();
     _ntcs.reserve(ntcCount);
