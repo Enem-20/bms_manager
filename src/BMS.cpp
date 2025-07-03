@@ -103,10 +103,15 @@ size_t BMS::sendShutdown()  {
 
     uint8_t shutdown_cmd[] = {0xDD, 0x5A, 0xE1, 0x02, 0x00, 0x02, 0xFF, 0x1B, 0x77};
     size_t byteCount = 0;
+    size_t readByteCount = 0;
+    std::vector<uint8_t> response;
     try {
+        std::lock_guard<std::mutex>(&mut);
         byteCount = write(shutdown_cmd, sizeof(shutdown_cmd));
+        readByteCount = read(response, 200);
     }
     catch(...) {
+        std::lock_guard<std::mutex>(&mut);
         close();
     }
     return byteCount;
@@ -119,6 +124,7 @@ BMSBatteriesInfo* BMS::getBMSBatteriesInfo() {
     size_t readByteCount = 0;
     std::vector<uint8_t> response;
     try { 
+        std::lock_guard<std::mutex>(&mut);
         sentByteCount = write(probe, sizeof(probe));
         ROS_INFO("sentByteCount: %zu", sentByteCount);
 
@@ -129,6 +135,7 @@ BMSBatteriesInfo* BMS::getBMSBatteriesInfo() {
         printHexROS(response);
     }
     catch(...) {
+        std::lock_guard<std::mutex>(&mut);
         close();
         return nullptr;
     }
@@ -158,6 +165,7 @@ std::vector<uint16_t> BMS::getVoltages() {
     std::vector<uint8_t> response;
     size_t readByteCount = 0;
     try { 
+        std::lock_guard<std::mutex>(&mut);
         sentByteCount = write(probe, sizeof(probe));
         ROS_INFO("sentByteCount: %zu", sentByteCount);
         
@@ -168,6 +176,7 @@ std::vector<uint16_t> BMS::getVoltages() {
         printHexROS(response);
     }
     catch(...) {
+        std::lock_guard<std::mutex>(&mut);
         close();
         return _voltages;
     }
@@ -207,6 +216,7 @@ bool BMS::isAnswerable() const {
 
 void BMS::checkAnswerable() {
     try {
+        std::lock_guard<std::mutex>(&mut);
         uint8_t probe[] = {0xDD, 0xA5, 0x04, 0x00, 0xFF, 0xFC, 0x77};
         size_t sentByteCount = write(probe, sizeof(probe));
         ROS_INFO("sentByteCount: %i", sentByteCount);

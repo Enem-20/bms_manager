@@ -3,6 +3,7 @@
 
 #include <string>
 #include <memory>
+#include <mutex>
 
 #include <ros/ros.h>
 #include <serial/serial.h>
@@ -65,6 +66,7 @@ private:
     bool _accessed = true;
     bool _answerable = true;
     uint8_t _seq = 0;
+    std::mutex mut;
 };
 
 }

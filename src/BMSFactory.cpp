@@ -31,10 +31,7 @@ std::vector<serial::BMS*> BMSFactory::scanForBMS(std::vector<serial::BMS*>& bmse
         }
     }
     if(shouldClear) {
-        for(auto bms : bmses) {
-            delete bms;
-        }
-        bmses.clear();
+        closeBMSes(bmses);
     }
 
     for (const auto& entry : std::filesystem::directory_iterator(path)) {
