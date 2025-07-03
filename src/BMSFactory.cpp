@@ -31,7 +31,7 @@ std::vector<serial::BMS*> BMSFactory::scanForBMS(std::vector<serial::BMS*>& bmse
         }
     }
     if(shouldClear) {
-        ROS_INFO("closing bmses")
+        ROS_INFO("closing bmses");
         closeBMSes(bmses);
     }
 
