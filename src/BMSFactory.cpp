@@ -22,17 +22,13 @@ std::vector<serial::BMS*> BMSFactory::scanForBMS(std::vector<serial::BMS*>& bmse
         if(bms->isOpen()) {
             bms->checkAnswerable();
             if(!bms->isAnswerable()) {
-                shouldClear = true;
+                bms->reconnect();
             }
                 
         }
         else {
-            shouldClear = true;
+            bms->reconnect();
         }
-    }
-    if(shouldClear) {
-        ROS_INFO("closing bmses");
-        closeBMSes(bmses);
     }
 
     for (const auto& entry : std::filesystem::directory_iterator(path)) {
