@@ -41,6 +41,7 @@ std::vector<serial::BMS*> BMSFactory::scanForBMS(std::vector<serial::BMS*>& bmse
         //ROS_INFO("After: if (!entry.is_character_file()) continue;");
         const std::string filename = entry.path().filename().string();
         ROS_INFO("filename: %s", filename.c_str());
+        if(alreadyHas(bmses, entry.path())) continue;
         if (!std::regex_match(filename, tty_regex)) continue;
         ROS_INFO("After: if (!std::regex_match(filename, tty_regex)) continue;");
         const std::string devicePath = entry.path().string();
@@ -70,4 +71,12 @@ std::vector<serial::BMS*> BMSFactory::scanForBMS(std::vector<serial::BMS*>& bmse
     }
 
     return bmses;
+}
+
+bool BMSFactory::alreadyHas(std::vector<serial::BMS*>& bmses, const std::string& path) {
+    for(auto bms : bmses) {
+        if(bms->getPath() == path)
+            return true;
+    }
+    return false;
 }

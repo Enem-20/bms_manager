@@ -18,7 +18,7 @@ public:
     static void closeBMSes(std::vector<serial::BMS*>& bmses);
     static std::vector<serial::BMS*> scanForBMS(std::vector<serial::BMS*>& bmses, const std::string& path, ros::NodeHandle& nh);
 private:
-    
+    static bool alreadyHas(std::vector<serial::BMS*>& bmses, const std::string& path);
 };
 
 #endif
