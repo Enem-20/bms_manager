@@ -10,7 +10,11 @@ public:
 private:
     MavToPublisher(ros::NodeHandle* nodeHandle);
     static MavToPublisher* instance;
+    
+    void send_heartbeat();
+    ros::NodeHandle* _nodeHandle;
     ros::Publisher _publisher;
+    ros::Timer heartbeat;
 };
 
 #endif
