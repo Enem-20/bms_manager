@@ -157,7 +157,7 @@ size_t BMS::sendShutdown()  {
 }
 
 std::shared_ptr<BMSBatteriesInfo> BMS::getBMSBatteriesInfo() {
-    BMSBatteriesInfo* battInfoCopy = nullptr;
+    BMSBatteriesInfo* battInfoCopy = new BMSBatteriesInfo;
     uint8_t probe[] = {0xDD, 0xA5, 0x03, 0x00, 0xFF, 0xFD, 0x77};
     size_t sentByteCount = 0;
     size_t readByteCount = 0;
