@@ -354,8 +354,8 @@ void BMS::publishCallback(const ros::TimerEvent&) {
 
 void BMS::updateCallback(const ros::TimerEvent&) {
     getBMSBatteriesInfo();
-    prepareFrame();
     _voltages = getVoltages();
+    prepareFrame();
 }
 
 }
