@@ -49,8 +49,7 @@ int main(int argc, char **argv) {
     ros::Timer bms_check_timer = nh->createTimer(ros::Duration(5.0), checkBMSPorts);
 
 
-    ros::AsyncSpinner spinner(4);
-    spinner.start();
+    ros::spin();
 
     delete nh;
     return 0;
