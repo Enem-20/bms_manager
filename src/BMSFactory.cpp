@@ -15,56 +15,52 @@ std::vector<serial::BMS*> BMSFactory::scanForBMS(std::vector<serial::BMS*>& bmse
                                                 const std::string& path, 
                                                 ros::NodeHandle& nh) {
     std::regex tty_regex(R"(ttyUSB\d+)");
-    std::vector<serial::BMS*> new_bmses;
+    std::vector<serial::BMS*> active_bmses;
     std::vector<std::string> current_devices;
 
-    // Шаг 1: Проверка существующих BMS
-    for (auto it = bmses.begin(); it != bmses.end();) {
-        serial::BMS* bms = *it;
+    for (auto* bms : bmses) {
         const std::string dev_path = bms->getPath();
-        
-        // Проверяем физическое существование устройства
         bool device_exists = std::filesystem::exists(dev_path);
-        
-        if (!device_exists || !bms->isAnswerable()) {
-            ROS_WARN("BMS %s disconnected or not responding. Reconnecting...", dev_path.c_str());
-            
-            // Попытка переподключения к тому же порту
-            bms->reconnect();
-            
-            if (!bms->isAnswerable() || !bms->isOpen()) {
-                ROS_ERROR("Failed to reconnect BMS %s. Removing.", dev_path.c_str());
-                delete bms;
-                it = bmses.erase(it);
-                continue;
-            }
+
+        if (device_exists && bms->isAnswerable()) {
+            active_bmses.push_back(bms);
+            current_devices.push_back(dev_path);
+            continue;
         }
-        
-        // Успешно переподключенный BMS сохраняется
-        new_bmses.push_back(bms);
-        current_devices.push_back(dev_path);
-        ++it;
+
+        if (device_exists) {
+            ROS_WARN("Reconnecting to existing BMS at %s", dev_path.c_str());
+            bms->reconnect(dev_path);
+            if (bms->isAnswerable()) {
+                active_bmses.push_back(bms);
+                current_devices.push_back(dev_path);
+                ROS_INFO("Reconnected to BMS at %s", dev_path.c_str());
+            } else {
+                ROS_ERROR("Failed to reconnect BMS at %s. Removing.", dev_path.c_str());
+                delete bms;
+            }
+        } else {
+            ROS_ERROR("BMS device %s no longer exists. Removing.", dev_path.c_str());
+            delete bms;
+        }
     }
 
-    // Шаг 2: Сканирование новых устройств
+
     for (const auto& entry : std::filesystem::directory_iterator(path)) {
-        if (!entry.is_character_file()) continue;
-        
+        if (!entry.is_character_file()) 
+            continue;
+
         const std::string filename = entry.path().filename().string();
+        if (!std::regex_match(filename, tty_regex)) 
+            continue;
+
         const std::string devicePath = entry.path().string();
-        
-        // Пропускаем неподходящие файлы
-        if (!std::regex_match(filename, tty_regex)) continue;
-        
-        // Проверяем, не добавлено ли уже устройство
-        bool already_exists = std::find(current_devices.begin(), 
-                                      current_devices.end(), 
-                                      devicePath) != current_devices.end();
-        
-        if (already_exists) continue;
+        if (std::find(current_devices.begin(), current_devices.end(), devicePath) != current_devices.end()) {
+            continue;
+        }
 
         try {
-            ROS_INFO("Trying to initialize BMS at %s", devicePath.c_str());
+            ROS_INFO("Trying to initialize new BMS at %s", devicePath.c_str());
             auto* bms = new serial::BMS(&nh, devicePath, 9600,
                                         serial::Timeout::simpleTimeout(1000),
                                         serial::eightbits,
@@ -73,20 +69,18 @@ std::vector<serial::BMS*> BMSFactory::scanForBMS(std::vector<serial::BMS*>& bmse
                                         serial::flowcontrol_none);
 
             if (bms->isAccessed() && bms->isAnswerable()) {
-                ROS_INFO("[BMS] Successfully initialized: %s", devicePath.c_str());
-                new_bmses.push_back(bms);
-                current_devices.push_back(devicePath);
+                ROS_INFO("Successfully initialized new BMS at %s", devicePath.c_str());
+                active_bmses.push_back(bms);
             } else {
-                ROS_WARN("[BMS] Device not accessible or not responding: %s", devicePath.c_str());
+                ROS_WARN("New BMS at %s is not accessible or not responding", devicePath.c_str());
                 delete bms;
             }
         } catch (const std::exception& e) {
-            ROS_ERROR("[BMS] Initialization error %s: %s", 
-                     devicePath.c_str(), e.what());
+            ROS_ERROR("Error initializing BMS at %s: %s", devicePath.c_str(), e.what());
         }
     }
 
-    return new_bmses;
+    return active_bmses;
 }
 
 bool BMSFactory::alreadyHas(const std::vector<serial::BMS*>& bmses, 

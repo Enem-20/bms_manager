@@ -98,6 +98,41 @@ void BMS::reconnect() {
     _updateTimer.start();
 }
 
+void BMS::reconnect(const std::string& new_port) {
+    _publishTimer.stop();
+    _updateTimer.stop();
+    close();
+    
+    if (!new_port.empty() && new_port != getPort()) {
+        setPort(new_port);
+    }
+
+    try {
+        open();
+    } catch (const std::exception& e) {
+        ROS_ERROR_STREAM("Reconnect open error: " << e.what());
+    }
+
+    if (access(getPort().c_str(), R_OK | W_OK) != 0) {
+        ROS_ERROR_STREAM("Cannot access port " << getPort() << " — permission denied.");
+        _accessed = false;
+    } else {
+        _accessed = true;
+    }
+
+    if (!isOpen()) {
+        ROS_ERROR_STREAM("Port " << getPort() << " did not open.");
+        _answerable = false;
+        return;
+    }
+
+    checkAnswerable();
+
+    updateCallback({});
+    _publishTimer.start();
+    _updateTimer.start();
+}
+
 void BMS::sendBatterries() {
     ROS_INFO("publish: %i", _ros_msg.seq);
     ROS_INFO("publishing...");
