@@ -136,7 +136,7 @@ void BMS::sendBatterries() {
     std::memcpy(ros_msg.payload64.data(), msg.payload64, ros_msg.payload64.size() * sizeof(uint64_t));
 
     ROS_INFO("publishing...");
-    MavToPublisher::getInstance()->getPub().publish(ros_msg);
+    MavToPublisher::getInstance(_nodeHandle)->getPub().publish(ros_msg);
     //_publisher.publish(ros_msg);
 }
 
