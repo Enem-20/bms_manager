@@ -18,7 +18,7 @@ void BMSFactory::closeBMSes(std::vector<serial::BMS*>& bmses) {
 std::vector<serial::BMS*> BMSFactory::scanForBMS(std::vector<serial::BMS*>& bmses, const std::string& path, ros::NodeHandle& nh) {
     std::regex tty_regex(R"(ttyUSB\d+)");
     bool shouldClear = false;
-    for(auto bms : bmses) {
+    for(auto& bms : bmses) {
         if(bms->isOpen()) {
             bms->checkAnswerable();
             if(!bms->isAnswerable()) {
@@ -28,8 +28,10 @@ std::vector<serial::BMS*> BMSFactory::scanForBMS(std::vector<serial::BMS*>& bmse
         }
         else {
             delete bms;
+            bms = nullptr;
         }
     }
+    vec.erase(std::remove(vec.begin(), vec.end(), nullptr), vec.end());
 
     for (const auto& entry : std::filesystem::directory_iterator(path)) {
         //ROS_INFO("Entry %s bytes", entry.path().c_str());
