@@ -99,42 +99,7 @@ void BMS::reconnect() {
 }
 
 void BMS::sendBatterries() {
-    // if (!_battInfo) return;
-
-    // mavlink_message_t msg;
-    // mavlink_battery_status_t bat{};
-
-    // bat.id = static_cast<uint8_t>(_id);
-    // bat.battery_function = MAV_BATTERY_FUNCTION_AVIONICS;
-    // bat.type = MAV_BATTERY_TYPE_LIPO;
-    // bat.temperature = calculateAverageCentiCelsius(_ntcs);
-
-    // for (size_t i = 0; i < 10; ++i) {
-    //     bat.voltages[i] = i < _voltages.size() ? _voltages[i] : UINT16_MAX;
-    // }
-
-    // for (size_t i = 0; i < 4; ++i) {
-    //     size_t idx = 10 + i;
-    //     bat.voltages_ext[i] = idx < _voltages.size() ? _voltages[idx] : UINT16_MAX;
-    // }
-    // ROS_INFO("_battInfo->current before : %i", _battInfo->current);
-    // bat.current_battery = static_cast<int16_t>(((_battInfo->current & 0xFF) << 8) | ((_battInfo->current >> 8) & 0xFF));
-    // bat.battery_remaining = static_cast<int8_t>(_battInfo->RSOC);
-
-    // mavlink_msg_battery_status_encode(1, MAV_COMP_ID_BATTERY, &msg, &bat);
-
-    // mavros_msgs::Mavlink ros_msg;
-    // ros_msg.header.stamp = ros::Time::now();
-    // ros_msg.sysid = msg.sysid;
-    // ros_msg.compid = msg.compid;
-    // ros_msg.msgid = msg.msgid;
-    // ros_msg.len = msg.len;
-    // ros_msg.seq = _seq++;
-    // ros_msg.checksum = msg.checksum;
-    // ros_msg.magic = msg.magic;
-    // ros_msg.payload64.resize((msg.len + 7) / 8);
-    // std::memcpy(ros_msg.payload64.data(), msg.payload64, ros_msg.payload64.size() * sizeof(uint64_t));
-
+    ROS_INFO("publish: %i", _ros_msg.seq);
     ROS_INFO("publishing...");
     MavToPublisher::getInstance(_nodeHandle)->getPub().publish(_ros_msg);
     //_publisher.publish(ros_msg);
