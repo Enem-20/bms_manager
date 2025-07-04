@@ -46,6 +46,7 @@ public:
     ~BMS() override;
     
     void reconnect();
+    void reconnect(const std::string& new_port);
 
     void sendBatterries();
     size_t sendShutdown();
