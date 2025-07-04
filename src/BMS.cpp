@@ -16,7 +16,7 @@
 
 namespace serial {
 
-size_t BMS::id_counter = 3;
+size_t BMS::id_counter = 2;
 std::unordered_set<size_t> BMS::has;
 
 void printHexROS(const std::vector<uint8_t>& data) {
@@ -40,13 +40,15 @@ BMS::BMS(ros::NodeHandle* nodeHandle, const std::string &port,
 {
     auto hasIt = has.find(id_counter);
     if(hasIt != has.end()) {
-        if(id_counter == 3) {
+        if(id_counter == 2) {
             ++id_counter;
         }
-        else if(id_counter == 4){
+        else if(id_counter == 3){
             --id_counter;
         }
     }
+
+    has.emplace(id_counter);
     _id = id_counter;
     //_publisher = nodeHandle->advertise<mavros_msgs::Mavlink>("/mavlink/to", 10);
     ROS_INFO("Before: if (access(port.c_str(), R_OK | W_OK) != 0) {");
