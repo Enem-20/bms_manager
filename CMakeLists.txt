@@ -20,7 +20,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(bms_manager_node src/bms_manager_node.cpp src/BMS.cpp src/BMSFactory.cpp)
+add_executable(bms_manager_node src/bms_manager_node.cpp src/BMS.cpp src/BMSFactory.cpp src/MavToPublisherSingleton.cpp)
 
 set_property(TARGET bms_manager_node PROPERTY CXX_STANDARD 17)
 

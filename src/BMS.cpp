@@ -12,6 +12,8 @@
 #include <mavros_msgs/Mavlink.h>
 #include <mavlink/v2.0/common/mavlink.h>
 
+#include "MavToPublisherSingleton.hpp"
+
 namespace serial {
 
 size_t BMS::id_counter = 3;
@@ -46,7 +48,7 @@ BMS::BMS(ros::NodeHandle* nodeHandle, const std::string &port,
         }
     }
     _id = id_counter;
-    _publisher = nodeHandle->advertise<mavros_msgs::Mavlink>("/mavlink/to", 10);
+    //_publisher = nodeHandle->advertise<mavros_msgs::Mavlink>("/mavlink/to", 10);
     ROS_INFO("Before: if (access(port.c_str(), R_OK | W_OK) != 0) {");
     if (access(port.c_str(), R_OK | W_OK) != 0) {
         ROS_ERROR_STREAM("Cannot access port " << port << " — permission denied.");
@@ -134,7 +136,8 @@ void BMS::sendBatterries() {
     std::memcpy(ros_msg.payload64.data(), msg.payload64, ros_msg.payload64.size() * sizeof(uint64_t));
 
     ROS_INFO("publishing...");
-    _publisher.publish(ros_msg);
+    MavToPublisherSingleton::getInstance().getPub().publish(ros_msg);
+    //_publisher.publish(ros_msg);
 }
 
 size_t BMS::sendShutdown()  {
