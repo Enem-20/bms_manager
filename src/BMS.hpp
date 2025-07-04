@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 #include <mutex>
+#include <unordered_set>
 
 #include <ros/ros.h>
 #include <serial/serial.h>
