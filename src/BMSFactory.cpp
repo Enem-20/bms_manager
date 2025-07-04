@@ -30,7 +30,7 @@ std::vector<serial::BMS*> BMSFactory::scanForBMS(std::vector<serial::BMS*>& bmse
             ROS_WARN("BMS %s disconnected or not responding. Reconnecting...", dev_path.c_str());
             
             // Попытка переподключения к тому же порту
-            bms->reconnect(device_exists ? dev_path : "");
+            bms->reconnect();
             
             if (!bms->isAnswerable() || !bms->isOpen()) {
                 ROS_ERROR("Failed to reconnect BMS %s. Removing.", dev_path.c_str());
