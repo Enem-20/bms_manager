@@ -12,7 +12,7 @@ MavToPublisher* MavToPublisher::getInstance(ros::NodeHandle* nodeHandle) {
 }
 
 ros::Publisher& MavToPublisher::getPub() {
-    return *_publisher;
+    return _publisher;
 }
 
 MavToPublisher::MavToPublisher(ros::NodeHandle* nodeHandle) {
