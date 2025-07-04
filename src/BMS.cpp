@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <algorithm>
+#include <unordered_set>
 
 #include <numeric>
 #include <unistd.h>
@@ -14,6 +15,9 @@
 
 namespace serial {
 
+size_t BMS::id_counter = 3;
+std::unordered_set<size_t> has;
+
 void printHexROS(const std::vector<uint8_t>& data) {
     std::ostringstream oss;
     for (uint8_t byte : data) {
@@ -23,7 +27,7 @@ void printHexROS(const std::vector<uint8_t>& data) {
     ROS_INFO_STREAM("Data in HEX: " << oss.str());
 }
 
-BMS::BMS(size_t id, ros::NodeHandle* nodeHandle, const std::string &port,
+BMS::BMS(ros::NodeHandle* nodeHandle, const std::string &port,
           uint32_t baudrate,
           Timeout timeout,
           bytesize_t bytesize,
@@ -31,9 +35,17 @@ BMS::BMS(size_t id, ros::NodeHandle* nodeHandle, const std::string &port,
           stopbits_t stopbits,
           flowcontrol_t flowcontrol) 
     : Serial(port, baudrate, timeout, bytesize, parity, stopbits, flowcontrol)
-    , _id(id)
     , _nodeHandle(nodeHandle)
 {
+    if(has.contains(id_counter)) {
+        if(id_counter == 3) {
+            ++id_counter;
+        }
+        else if(id_counter == 4){
+            --id_counter;
+        }
+    }
+    _id = id_counter;
     _publisher = nodeHandle->advertise<mavros_msgs::Mavlink>("/mavlink/to", 10);
     ROS_INFO("Before: if (access(port.c_str(), R_OK | W_OK) != 0) {");
     if (access(port.c_str(), R_OK | W_OK) != 0) {
@@ -54,6 +66,7 @@ BMS::BMS(size_t id, ros::NodeHandle* nodeHandle, const std::string &port,
 }
 
 BMS::~BMS() {
+    has.erase(_id);
     _publishTimer.stop();
     _updateTimer.stop();
     _publisher.shutdown();

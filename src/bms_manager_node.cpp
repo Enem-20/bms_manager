@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include <unordered_set>
 
 #include <ros/ros.h>
 #include <mavros_msgs/RCIn.h>

@@ -27,7 +27,7 @@ std::vector<serial::BMS*> BMSFactory::scanForBMS(std::vector<serial::BMS*>& bmse
                 
         }
         else {
-            bms->reconnect();
+            delete bms;
         }
     }
 
