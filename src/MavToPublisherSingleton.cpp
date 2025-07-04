@@ -52,5 +52,5 @@ void send_heartbeat() {
 MavToPublisher::MavToPublisher(ros::NodeHandle* nodeHandle) {
     _nodeHandle = nodeHandle;
     _publisher = nodeHandle->advertise<mavros_msgs::Mavlink>("/mavlink/to", 10);
-    heartbeat = nodeHandle->createTimer(ros::Duration(1.0), send_heartbeat);
+    heartbeat = nodeHandle->createTimer(ros::Duration(1.0), &MavToPublisher::send_heartbeat, this);
 }
