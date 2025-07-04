@@ -36,7 +36,8 @@ BMS::BMS(ros::NodeHandle* nodeHandle, const std::string &port,
     : Serial(port, baudrate, timeout, bytesize, parity, stopbits, flowcontrol)
     , _nodeHandle(nodeHandle)
 {
-    if(has.contains(id_counter)) {
+    auto hasIt = has.find(id_counter);
+    if(hasIt != has.end()) {
         if(id_counter == 3) {
             ++id_counter;
         }
@@ -79,13 +80,13 @@ void BMS::reconnect() {
     close();
     open();
     ROS_INFO("Before: if (access(port.c_str(), R_OK | W_OK) != 0) {");
-    if (access(port.c_str(), R_OK | W_OK) != 0) {
-        ROS_ERROR_STREAM("Cannot access port " << port << " — permission denied.");
+    if (access(getPort().c_str(), R_OK | W_OK) != 0) {
+        ROS_ERROR_STREAM("Cannot access port " << getPort().c_str() << " — permission denied.");
         _accessed = false;
     }
     ROS_INFO("After: if (access(port.c_str(), R_OK | W_OK) != 0) {");
     if (!isOpen()) {
-        ROS_ERROR_STREAM("Port " << port << " did not open (no exception thrown)");
+        ROS_ERROR_STREAM("Port " << getPort().c_str() << " did not open (no exception thrown)");
         return;
     }
     ROS_INFO("After: if (!isOpen()) {");
