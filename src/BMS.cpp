@@ -15,7 +15,7 @@
 namespace serial {
 
 size_t BMS::id_counter = 3;
-std::unordered_set<size_t> has;
+std::unordered_set<size_t> BMS::has;
 
 void printHexROS(const std::vector<uint8_t>& data) {
     std::ostringstream oss;
