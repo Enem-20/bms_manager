@@ -45,6 +45,8 @@ public:
           flowcontrol_t flowcontrol = flowcontrol_none);
     ~BMS() override;
     
+    void stopTimers();
+
     void reconnect();
     void reconnect(const std::string& new_port);
 

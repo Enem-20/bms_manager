@@ -75,6 +75,11 @@ BMS::~BMS() {
     close();
 }
 
+void BMS::stopTimers() {
+    _publishTimer.stop();
+    _updateTimer.stop();
+}
+
 void BMS::reconnect() {
     _publishTimer.stop();
     _updateTimer.stop();
