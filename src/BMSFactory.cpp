@@ -31,7 +31,7 @@ std::vector<serial::BMS*> BMSFactory::scanForBMS(std::vector<serial::BMS*>& bmse
             bms = nullptr;
         }
     }
-    vec.erase(std::remove(vec.begin(), vec.end(), nullptr), vec.end());
+    bmses.erase(std::remove(bmses.begin(), bmses.end(), nullptr), bmses.end());
 
     for (const auto& entry : std::filesystem::directory_iterator(path)) {
         //ROS_INFO("Entry %s bytes", entry.path().c_str());
