@@ -43,7 +43,7 @@ std::vector<serial::BMS*> BMSFactory::scanForBMS(std::vector<serial::BMS*>& bmse
         const std::string devicePath = entry.path().string();
         ROS_INFO("devicePath = %s", devicePath.c_str());
         try {
-            auto* bms = new serial::BMS(5, &nh,
+            auto* bms = new serial::BMS(&nh,
                 devicePath,
                 9600,
                 serial::Timeout::simpleTimeout(1000),
