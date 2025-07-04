@@ -45,7 +45,7 @@ public:
 
     void sendBatterries();
     size_t sendShutdown();
-    BMSBatteriesInfo* getBMSBatteriesInfo();
+    std::shared_ptr<BMSBatteriesInfo> getBMSBatteriesInfo();
     std::vector<uint16_t> getVoltages();
 
     bool isAccessed() const;
@@ -59,7 +59,7 @@ private:
     void publishCallback(const ros::TimerEvent&);
     void updateCallback(const ros::TimerEvent&);
 
-    BMSBatteriesInfo* _battInfo;
+    std::shared_ptr<BMSBatteriesInfo> _battInfo;
     size_t _id;
     ros::NodeHandle* _nodeHandle;
     ros::Publisher _publisher;
