@@ -62,7 +62,7 @@ private:
     std::shared_ptr<BMSBatteriesInfo> _battInfo;
     size_t _id;
     ros::NodeHandle* _nodeHandle;
-    ros::Publisher _publisher;
+    //ros::Publisher _publisher;
     ros::Timer _publishTimer;
     ros::Timer _updateTimer;
     std::vector<int16_t> _ntcs;
