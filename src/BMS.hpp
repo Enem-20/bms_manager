@@ -9,6 +9,10 @@
 #include <ros/ros.h>
 #include <serial/serial.h>
 
+#include <mavros_msgs/Mavlink.h>
+#include <mavlink/v2.0/common/mavlink.h>
+
+
 namespace serial {
     class Serial;
 
@@ -53,12 +57,14 @@ public:
     void checkAnswerable();
     const std::string getPath() const;
 private:
+    void prepareFrame();
     int16_t calculateAverageCentiCelsius(const std::vector<int16_t>& temps);
     std::vector<int16_t> parseNTCsToCentiCelsius(const uint8_t* dataPtr, size_t byteCount);
     
     void publishCallback(const ros::TimerEvent&);
     void updateCallback(const ros::TimerEvent&);
 
+    mavros_msgs::Mavlink _ros_msg;
     std::shared_ptr<BMSBatteriesInfo> _battInfo;
     size_t _id;
     ros::NodeHandle* _nodeHandle;
