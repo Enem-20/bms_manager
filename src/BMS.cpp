@@ -185,7 +185,8 @@ BMSBatteriesInfo* BMS::getBMSBatteriesInfo() {
     const uint8_t* dataPtr = &response[4];
 
     memcpy(battInfoCopy, dataPtr, sizeof(BMSBatteriesInfo));
-    delete _battInfo;
+    if(_battInfo)
+        delete _battInfo;
     _battInfo = battInfoCopy;
     uint8_t ntcCount = _battInfo->NTCCount;
     _ntcs.clear();
