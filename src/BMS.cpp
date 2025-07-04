@@ -71,7 +71,6 @@ BMS::~BMS() {
     _updateTimer.stop();
     _publisher.shutdown();
     close();
-    delete _battInfo;
 }
 
 void BMS::reconnect() {
