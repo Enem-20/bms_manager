@@ -15,7 +15,7 @@ ros::Publisher& MavToPublisher::getPub() {
     return _publisher;
 }
 
-void MavToPublisher::send_heartbeat() {
+void MavToPublisher::send_heartbeat(const ros::TimerEvent&) {
     mavlink_message_t msg;
 
     mavlink_msg_heartbeat_pack(
