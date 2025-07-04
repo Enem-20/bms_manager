@@ -31,7 +31,7 @@ struct BMSBatteriesInfo {
 #pragma pack(pop)
 class BMS : public Serial {
 public:
-    BMS(size_t id, ros::NodeHandle* nodeHandle, const std::string &port = "",
+    BMS(ros::NodeHandle* nodeHandle, const std::string &port = "",
           uint32_t baudrate = 9600,
           Timeout timeout = Timeout::simpleTimeout(1000),
           bytesize_t bytesize = eightbits,
@@ -70,6 +70,8 @@ private:
     bool _answerable = true;
     uint8_t _seq = 0;
     std::mutex mut;
+    static size_t id_counter;
+    static std::unordered_set<size_t> has;
 };
 
 }
