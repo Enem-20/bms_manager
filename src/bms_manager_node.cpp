@@ -7,6 +7,7 @@
 
 #include "BMS.hpp"
 #include "BMSFactory.hpp"
+#include "MavToPublisherSingleton.hpp"
 
 // Глобальные переменные
 ros::Time last_shutdown_time = ros::Time(0);
@@ -56,7 +57,7 @@ int main(int argc, char **argv) {
         std::lock_guard<std::mutex> lock(bms_mutex);
         BMSFactory::scanForBMS(bmses, "/dev", nh);
     }
-
+    MavToPublisher::getInstance(nh);
     ros::Subscriber rc_sub = nh.subscribe("/mavros/rc/in", 10, rc_callback);
     ros::Timer bms_check_timer = nh.createTimer(ros::Duration(5.0), checkBMSPorts);
 
