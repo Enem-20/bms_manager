@@ -365,11 +365,11 @@ void BMS::prepareFrame() {
 
     mavlink_message_t msg;
     msg.sysid = 1;
-
-    msg.compid = 180 + _id - 2;
+    static counter = 0;
+    msg.compid = 180 + (counter % 2);
     mavlink_battery_status_t bat{};
 
-    bat.id = static_cast<uint8_t>(_id);
+    bat.id = static_cast<uint8_t>((counter % 2) + 2);
     bat.battery_function = MAV_BATTERY_FUNCTION_AVIONICS;
     bat.type = MAV_BATTERY_TYPE_LIPO;
     bat.temperature = calculateAverageCentiCelsius(_ntcs);
@@ -398,6 +398,7 @@ void BMS::prepareFrame() {
     _ros_msg.magic = msg.magic;
     _ros_msg.payload64.resize((msg.len + 7) / 8);
     std::memcpy(_ros_msg.payload64.data(), msg.payload64, _ros_msg.payload64.size() * sizeof(uint64_t));
+    ++counter;
 }
 
 int16_t BMS::calculateAverageCentiCelsius(const std::vector<int16_t>& temps)
