@@ -9,12 +9,10 @@
 #include "BMSFactory.hpp"
 #include "MavToPublisherSingleton.hpp"
 
-// Глобальные переменные
 ros::Time last_shutdown_time = ros::Time(0);
 std::vector<serial::BMS*> bmses;
 std::mutex bms_mutex;
 
-// Обработка RC каналов
 void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg) {
     if (msg->channels.size() < 10) return;
 
