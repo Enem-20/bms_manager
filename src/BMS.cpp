@@ -365,6 +365,8 @@ void BMS::prepareFrame() {
 
     mavlink_message_t msg;
     msg.sysid = 1;
+    msg.compid = 180 + _id -2;
+    msg.seq = _seq++;
     static size_t counter = 0;
     mavlink_battery_status_t bat{};
 
@@ -372,7 +374,7 @@ void BMS::prepareFrame() {
     bat.battery_function = MAV_BATTERY_FUNCTION_AVIONICS;
     bat.type = MAV_BATTERY_TYPE_LIPO;
     bat.temperature = calculateAverageCentiCelsius(_ntcs);
-    
+
     for (size_t i = 0; i < 10; ++i) {
         bat.voltages[i] = i < _voltages.size() ? _voltages[i] : UINT16_MAX;
     }
@@ -389,10 +391,10 @@ void BMS::prepareFrame() {
 
     _ros_msg.header.stamp = ros::Time::now();
     _ros_msg.sysid = msg.sysid;
-    _ros_msg.compid = 180 + _id -2;
+    _ros_msg.compid = msg.compid;
     _ros_msg.msgid = msg.msgid;
     _ros_msg.len = msg.len;
-    _ros_msg.seq = _seq++;
+    _ros_msg.seq = msg.seq;
     _ros_msg.checksum = msg.checksum;
     _ros_msg.magic = msg.magic;
     _ros_msg.payload64.resize((msg.len + 7) / 8);
