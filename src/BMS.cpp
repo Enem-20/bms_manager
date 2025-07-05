@@ -365,7 +365,7 @@ void BMS::prepareFrame() {
 
     mavlink_message_t msg;
     msg.sysid = 1;
-    static counter = 0;
+    static size_t counter = 0;
     msg.compid = 180 + (counter % 2);
     mavlink_battery_status_t bat{};
 
