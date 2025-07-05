@@ -365,7 +365,8 @@ void BMS::prepareFrame() {
 
     mavlink_message_t msg;
     msg.sysid = 1;
-    msg.compid = 180;
+
+    msg.compid = 180 + _id - 2;
     mavlink_battery_status_t bat{};
 
     bat.id = static_cast<uint8_t>(_id);
