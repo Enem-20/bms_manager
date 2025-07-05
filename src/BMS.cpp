@@ -51,7 +51,7 @@ BMS::BMS(ros::NodeHandle* nodeHandle, const std::string &port,
 
     has.emplace(id_counter);
     _id = id_counter;
-    _publisher = nodeHandle->advertise<mavros_msgs::Mavlink>("/mavlink/to", 10);
+    //_publisher = nodeHandle->advertise<mavros_msgs::Mavlink>("/mavlink/to", 10);
     ROS_INFO("Before: if (access(port.c_str(), R_OK | W_OK) != 0) {");
     if (access(port.c_str(), R_OK | W_OK) != 0) {
         ROS_ERROR_STREAM("Cannot access port " << port << " — permission denied.");
@@ -183,8 +183,8 @@ void BMS::reconnect(const std::string& new_port) {
 void BMS::sendBatterries() {
     ROS_INFO("publish: %i", _ros_msg.seq);
     ROS_INFO("publishing...");
-    _publisher.publish(_ros_msg);
-    //MavToPublisher::getInstance(_nodeHandle)->getPub().publish(_ros_msg);
+    //_publisher.publish(_ros_msg);
+    MavToPublisher::getInstance(_nodeHandle)->getPub().publish(_ros_msg);
     //_publisher.publish(ros_msg);
 }
 
