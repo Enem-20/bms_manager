@@ -390,7 +390,7 @@ void BMS::prepareFrame() {
 
     _ros_msg.header.stamp = ros::Time::now();
     _ros_msg.sysid = msg.sysid;
-    _ros_msg.compid = msg.compid;
+    _ros_msg.compid = 180 + (counter % 2);
     _ros_msg.msgid = msg.msgid;
     _ros_msg.len = msg.len;
     _ros_msg.seq = _seq++;
