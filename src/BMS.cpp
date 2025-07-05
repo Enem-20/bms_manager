@@ -32,9 +32,12 @@ BMS::BMS(ros::NodeHandle* nodeHandle, const std::string &port,
           bytesize_t bytesize,
           parity_t parity,
           stopbits_t stopbits,
-          flowcontrol_t flowcontrol) 
+          flowcontrol_t flowcontrol
+        ) 
     : Serial(port, baudrate, timeout, bytesize, parity, stopbits, flowcontrol)
     , _nodeHandle(nodeHandle)
+    , _gen(_rd())
+    , _dist(0, 6303)
 {
     auto hasIt = has.find(id_counter);
     if(hasIt != has.end()) {
@@ -63,6 +66,45 @@ BMS::BMS(ros::NodeHandle* nodeHandle, const std::string &port,
     checkAnswerable();
     ROS_INFO("After: checkAnswerable();");
     updateCallback({});
+    _publishTimer = _nodeHandle->createTimer(ros::Duration(1.0), &BMS::publishCallback, this);
+    _updateTimer = _nodeHandle->createTimer(ros::Duration(2.0), &BMS::updateCallback, this);
+}
+
+BMS::BMS(const std::string &port, ros::NodeHandle* nodeHandle) 
+    : Serial()
+    , _nodeHandle(nodeHandle)
+{
+    auto hasIt = has.find(id_counter);
+    if(hasIt != has.end()) {
+        if(id_counter == 2) {
+            ++id_counter;
+        }
+        else if(id_counter == 3){
+            --id_counter;
+        }
+    }
+
+    has.emplace(id_counter);
+    _id = id_counter;
+    _accessed = true;
+    _answerable = true;
+
+    _battInfo = std::make_shared<BMSBatteriesInfo>();
+    _battInfo->current = 34;
+    _battInfo->batteryStringsCount = 14;
+    _battInfo->NTCCount = 4;
+    _battInfo->RSOC = 54;
+    _battInfo->cycles = 3456;
+    _battInfo->totalVoltage = 14;
+    _ntcs.resize(5);
+    for(auto& ntc : _ntcs) {
+        ntc = _dist(_gen);
+    }
+    _voltages.resize(14);
+    for(auto& voltage : _voltages) {
+        voltage = _dist(_gen);
+    }
+
     _publishTimer = _nodeHandle->createTimer(ros::Duration(1.0), &BMS::publishCallback, this);
     _updateTimer = _nodeHandle->createTimer(ros::Duration(2.0), &BMS::updateCallback, this);
 }
@@ -277,6 +319,43 @@ void BMS::checkAnswerable() {
 
 const std::string BMS::getPath() const {
     return getPort();
+}
+
+void BMS::prepareTestFrame() {
+    if (!_battInfo) return;
+
+    mavlink_message_t msg;
+    mavlink_battery_status_t bat{};
+
+    bat.id = static_cast<uint8_t>(_id);
+    bat.battery_function = MAV_BATTERY_FUNCTION_AVIONICS;
+    bat.type = MAV_BATTERY_TYPE_LIPO;
+    bat.temperature = calculateAverageCentiCelsius(_ntcs);
+
+    for (size_t i = 0; i < 10; ++i) {
+        bat.voltages[i] = i < _voltages.size() ? _voltages[i] : UINT16_MAX;
+    }
+
+    for (size_t i = 0; i < 4; ++i) {
+        size_t idx = 10 + i;
+        bat.voltages_ext[i] = idx < _voltages.size() ? _voltages[idx] : UINT16_MAX;
+    }
+    ROS_INFO("_battInfo->current before : %i", _battInfo->current);
+    bat.current_battery = static_cast<int16_t>(((_battInfo->current & 0xFF) << 8) | ((_battInfo->current >> 8) & 0xFF));
+    bat.battery_remaining = static_cast<int8_t>(_battInfo->RSOC);
+
+    mavlink_msg_battery_status_encode(1, MAV_COMP_ID_BATTERY, &msg, &bat);
+
+    _ros_msg.header.stamp = ros::Time::now();
+    _ros_msg.sysid = msg.sysid;
+    _ros_msg.compid = msg.compid;
+    _ros_msg.msgid = msg.msgid;
+    _ros_msg.len = msg.len;
+    _ros_msg.seq = _seq++;
+    _ros_msg.checksum = msg.checksum;
+    _ros_msg.magic = msg.magic;
+    _ros_msg.payload64.resize((msg.len + 7) / 8);
+    std::memcpy(_ros_msg.payload64.data(), msg.payload64, _ros_msg.payload64.size() * sizeof(uint64_t));
 }
 
 void BMS::prepareFrame() {

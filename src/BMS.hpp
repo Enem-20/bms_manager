@@ -5,6 +5,7 @@
 #include <memory>
 #include <mutex>
 #include <unordered_set>
+#include <random>
 
 #include <ros/ros.h>
 #include <serial/serial.h>
@@ -43,6 +44,7 @@ public:
           parity_t parity = parity_none,
           stopbits_t stopbits = stopbits_one,
           flowcontrol_t flowcontrol = flowcontrol_none);
+    BMS(const std::string &port, ros::NodeHandle* nodeHandle);
     ~BMS() override;
     
     void stopTimers();
@@ -60,6 +62,7 @@ public:
     void checkAnswerable();
     const std::string getPath() const;
 private:
+    void prepareTestFrame();
     void prepareFrame();
     int16_t calculateAverageCentiCelsius(const std::vector<int16_t>& temps);
     std::vector<int16_t> parseNTCsToCentiCelsius(const uint8_t* dataPtr, size_t byteCount);
@@ -67,6 +70,9 @@ private:
     void publishCallback(const ros::TimerEvent&);
     void updateCallback(const ros::TimerEvent&);
 
+    std::random_device _rd;
+    std::mt19937 _gen;
+    std::uniform_int_distribution<uint16_t> _dist;
     mavros_msgs::Mavlink _ros_msg;
     std::shared_ptr<BMSBatteriesInfo> _battInfo;
     size_t _id;
