@@ -46,7 +46,7 @@ void MavToPublisher::send_heartbeat(const ros::TimerEvent&) {
     ros_msg.payload64.resize(payload_size / sizeof(uint64_t));
     memcpy(ros_msg.payload64.data(), msg.payload64, payload_size);
 
-    _publisher.publish(ros_msg);
+    //_publisher.publish(ros_msg);
 }
 
 MavToPublisher::MavToPublisher(ros::NodeHandle* nodeHandle) {
