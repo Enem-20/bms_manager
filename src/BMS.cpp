@@ -14,7 +14,7 @@
 
 namespace serial {
 
-size_t BMS::id_counter = 0;
+size_t BMS::id_counter = 2;
 std::unordered_set<size_t> BMS::has;
 
 void printHexROS(const std::vector<uint8_t>& data) {
@@ -41,10 +41,10 @@ BMS::BMS(ros::NodeHandle* nodeHandle, const std::string &port,
 {
     auto hasIt = has.find(id_counter);
     if(hasIt != has.end()) {
-        if(id_counter == 0) {
+        if(id_counter == 2) {
             ++id_counter;
         }
-        else if(id_counter == 1){
+        else if(id_counter == 3){
             --id_counter;
         }
     }
@@ -327,8 +327,8 @@ void BMS::prepareTestFrame() {
 
     mavlink_message_t msg;
     mavlink_battery_status_t bat{};
-
-    bat.id = _id;
+    static size_t counter = 0;
+    bat.id = static_cast<uint8_t>(_id + (counter % 2));
     bat.battery_function = MAV_BATTERY_FUNCTION_AVIONICS;
     bat.type = MAV_BATTERY_TYPE_LIPO;
     bat.temperature = calculateAverageCentiCelsius(_ntcs);
@@ -349,7 +349,7 @@ void BMS::prepareTestFrame() {
 
     _ros_msg.header.stamp = ros::Time::now();
     _ros_msg.sysid = msg.sysid;
-    _ros_msg.compid = 180+_id;
+    _ros_msg.compid = 180;
     _ros_msg.msgid = msg.msgid;
     _ros_msg.len = msg.len;
     _ros_msg.seq = _seq++;
@@ -357,19 +357,22 @@ void BMS::prepareTestFrame() {
     _ros_msg.magic = msg.magic;
     _ros_msg.payload64.resize((msg.len + 7) / 8);
     std::memcpy(_ros_msg.payload64.data(), msg.payload64, _ros_msg.payload64.size() * sizeof(uint64_t));
+    ++counter;
 }
 
 void BMS::prepareFrame() {
     if (!_battInfo) return;
 
     mavlink_message_t msg;
+    msg.sysid = 1;
+    msg.compid = 180;
     mavlink_battery_status_t bat{};
 
-    bat.id = 0;
+    bat.id = static_cast<uint8_t>(_id);
     bat.battery_function = MAV_BATTERY_FUNCTION_AVIONICS;
     bat.type = MAV_BATTERY_TYPE_LIPO;
     bat.temperature = calculateAverageCentiCelsius(_ntcs);
-
+    
     for (size_t i = 0; i < 10; ++i) {
         bat.voltages[i] = i < _voltages.size() ? _voltages[i] : UINT16_MAX;
     }
