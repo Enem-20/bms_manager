@@ -85,7 +85,7 @@ private:
     bool _accessed = true;
     bool _answerable = true;
     uint8_t _seq = 0;
-    std::mutex mut;
+    mutable std::mutex mut;
     static size_t id_counter;
     static std::unordered_set<size_t> has;
 };

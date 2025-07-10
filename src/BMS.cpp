@@ -196,7 +196,7 @@ size_t BMS::sendShutdown()  {
     size_t readByteCount = 0;
     std::vector<uint8_t> response;
     try {
-        std::lock_guard<std::mutex>(&mut);
+        std::lock_guard<std::mutex>(mut);
         //std::lock_guard<std::mutex>(&mut);
         byteCount = write(shutdown_cmd, sizeof(shutdown_cmd));
         readByteCount = read(response, 200);
@@ -218,7 +218,7 @@ std::shared_ptr<BMSBatteriesInfo> BMS::getBMSBatteriesInfo() {
     size_t readByteCount = 0;
     std::vector<uint8_t> response;
     try { 
-        std::lock_guard<std::mutex>(&mut);
+        std::lock_guard<std::mutex>(mut);
         sentByteCount = write(probe, sizeof(probe));
         ROS_INFO("sentByteCount: %zu", sentByteCount);
 
@@ -257,7 +257,7 @@ std::vector<uint16_t> BMS::getVoltages() {
     std::vector<uint8_t> response;
     size_t readByteCount = 0;
     try { 
-        std::lock_guard<std::mutex>(&mut);
+        std::lock_guard<std::mutex>(mut);
         sentByteCount = write(probe, sizeof(probe));
         ROS_INFO("sentByteCount: %zu", sentByteCount);
         
@@ -307,7 +307,7 @@ bool BMS::isAnswerable() const {
 
 void BMS::checkAnswerable() {
     try {
-        std::lock_guard<std::mutex>(&mut);
+        std::lock_guard<std::mutex>(mut);
         uint8_t probe[] = {0xDD, 0xA5, 0x04, 0x00, 0xFF, 0xFC, 0x77};
         size_t sentByteCount = write(probe, sizeof(probe));
         ROS_INFO("sentByteCount: %i", sentByteCount);
