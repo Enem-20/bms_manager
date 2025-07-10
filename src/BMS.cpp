@@ -196,7 +196,7 @@ size_t BMS::sendShutdown()  {
     size_t readByteCount = 0;
     std::vector<uint8_t> response;
     try {
-        std::lock_guard<std::mutex> _guard(mut);
+        //std::lock_guard<std::mutex> _guard(mut);
         //std::lock_guard<std::mutex>(&mut);
         byteCount = write(shutdown_cmd, sizeof(shutdown_cmd));
         readByteCount = read(response, 200);
