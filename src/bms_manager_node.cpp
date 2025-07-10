@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
     ros::Subscriber rc_sub = nh.subscribe("/mavros/rc/in", 10, rc_callback);
     ros::Timer bms_check_timer = nh.createTimer(ros::Duration(5.0), checkBMSPorts);
 
-    ros::AsyncSpinner spinner(6);
+    ros::AsyncSpinner spinner(2);
     spinner.start();
 
     ros::waitForShutdown();
