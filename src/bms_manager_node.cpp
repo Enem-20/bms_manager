@@ -31,8 +31,11 @@ void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg) {
                 ROS_INFO("Shutdown command sent");
                 ++disconnectedCount;
             }
+            else {
+                ROS_ERROR("bms didn't open: %i", disconnectedCount);
+            }
         }
-        ROS_ERROR("bms disconnected count: %i", ++disconnectedCount);
+        ROS_ERROR("bms disconnected count: %i", disconnectedCount);
     }
 }
 ros::NodeHandle* g_nh = nullptr;
