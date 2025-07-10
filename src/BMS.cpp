@@ -202,6 +202,7 @@ size_t BMS::sendShutdown()  {
     }
     catch(...) {
         //std::lock_guard<std::mutex>(&mut);
+        ROS_ERROR("shutdown command issue");
         close();
     }
     return byteCount;
