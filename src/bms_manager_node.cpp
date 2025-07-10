@@ -30,8 +30,10 @@ void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg) {
             size_t disconnectedCount = 0;
             for (auto bms : bmses) {
                 if (bms && bms->isOpen()) {
-                    bms->sendShutdown();
-                    ROS_INFO("Shutdown command sent");
+                    futures.push_back(std::async(std::launch::async, [bms]() {
+                        bms->sendShutdown();
+                        ROS_INFO("Shutdown command sent");
+                    }));
                     ++disconnectedCount;
                 }
                 else {
