@@ -181,8 +181,8 @@ void BMS::reconnect(const std::string& new_port) {
 }
 
 void BMS::sendBatterries() {
-    ROS_INFO("publish: %i", _ros_msg.seq);
-    ROS_INFO("publishing...");
+    //ROS_INFO("publish: %i", _ros_msg.seq);
+    //ROS_INFO("publishing...");
     //_publisher.publish(_ros_msg);
     MavToPublisher::getInstance(_nodeHandle)->getPub().publish(_ros_msg);
     //_publisher.publish(ros_msg);
@@ -240,7 +240,7 @@ std::shared_ptr<BMSBatteriesInfo> BMS::getBMSBatteriesInfo() {
     uint8_t ntcCount = _battInfo->NTCCount;
     _ntcs.clear();
     _ntcs.reserve(ntcCount);
-    ROS_INFO("ntcCount: %i", ntcCount);
+    //ROS_INFO("ntcCount: %i", ntcCount);
     const uint8_t* ntcData = dataPtr + sizeof(BMSBatteriesInfo);
     parseNTCsToCentiCelsius(ntcData, ntcCount*2);
 
@@ -342,7 +342,7 @@ void BMS::prepareTestFrame() {
         size_t idx = 10 + i;
         bat.voltages_ext[i] = idx < _voltages.size() ? _voltages[idx] : UINT16_MAX;
     }
-    ROS_INFO("_battInfo->current before : %i", _battInfo->current);
+    //ROS_INFO("_battInfo->current before : %i", _battInfo->current);
     bat.current_battery = static_cast<int16_t>(((_battInfo->current & 0xFF) << 8) | ((_battInfo->current >> 8) & 0xFF));
     bat.battery_remaining = static_cast<int8_t>(_battInfo->RSOC);
 
@@ -384,7 +384,7 @@ void BMS::prepareFrame() {
         size_t idx = 10 + i;
         bat.voltages_ext[i] = idx < _voltages.size() ? _voltages[idx] : UINT16_MAX;
     }
-    ROS_INFO("_battInfo->current before : %i", _battInfo->current);
+    //ROS_INFO("_battInfo->current before : %i", _battInfo->current);
     bat.current_battery = static_cast<int16_t>(((_battInfo->current & 0xFF) << 8) | ((_battInfo->current >> 8) & 0xFF));
     bat.battery_remaining = static_cast<int8_t>(_battInfo->RSOC);
 
@@ -430,9 +430,9 @@ std::vector<int16_t> BMS::parseNTCsToCentiCelsius(const uint8_t* dataPtr, size_t
     {
         uint16_t raw_be = (static_cast<uint16_t>(dataPtr[i]) << 8) | static_cast<uint16_t>(dataPtr[i + 1]);
 
-        std::cout << "0.1K: " << raw_be << '\n';
+        //std::cout << "0.1K: " << raw_be << '\n';
         int16_t centiC = static_cast<int16_t>(raw_be*10 - 27315);
-        std::cout << "centiC: " << centiC << '\n';
+        //std::cout << "centiC: " << centiC << '\n';
         result.push_back(centiC);
     }
 
