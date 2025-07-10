@@ -199,6 +199,8 @@ size_t BMS::sendShutdown()  {
         //std::lock_guard<std::mutex>(&mut);
         byteCount = write(shutdown_cmd, sizeof(shutdown_cmd));
         readByteCount = read(response, 200);
+        ROS_ERROR("wrote shutdown bytes: %i", byteCount);
+        ROS_ERROR("read shutdown bytes: %i", readByteCount);
     }
     catch(...) {
         //std::lock_guard<std::mutex>(&mut);
