@@ -1,6 +1,8 @@
 #include <string>
 #include <vector>
 #include <mutex>
+#include <thread>
+#include <future>
 
 #include <ros/ros.h>
 #include <mavros_msgs/RCIn.h>
@@ -21,21 +23,26 @@ void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg) {
 
     if (ch10 > 1899 && (now - last_shutdown_time).toSec() >= 5.0) {
         last_shutdown_time = now;
-
-        std::lock_guard<std::mutex> lock(bms_mutex);
-        ROS_ERROR("bms count: %i", bmses.size());
-        size_t disconnectedCount = 0;
-        for (auto bms : bmses) {
-            if (bms && bms->isOpen()) {
-                bms->sendShutdown();
-                ROS_INFO("Shutdown command sent");
-                ++disconnectedCount;
+        std::vector<std::future<void>> futures;
+        {
+            std::lock_guard<std::mutex> lock(bms_mutex);
+            ROS_ERROR("bms count: %i", bmses.size());
+            size_t disconnectedCount = 0;
+            for (auto bms : bmses) {
+                if (bms && bms->isOpen()) {
+                    bms->sendShutdown();
+                    ROS_INFO("Shutdown command sent");
+                    ++disconnectedCount;
+                }
+                else {
+                    ROS_ERROR("bms didn't open: %i", disconnectedCount);
+                }
             }
-            else {
-                ROS_ERROR("bms didn't open: %i", disconnectedCount);
-            }
+            ROS_ERROR("bms disconnected count: %i", disconnectedCount);
         }
-        ROS_ERROR("bms disconnected count: %i", disconnectedCount);
+        for (auto& f : futures) {
+            f.get();
+        }
     }
 }
 ros::NodeHandle* g_nh = nullptr;
