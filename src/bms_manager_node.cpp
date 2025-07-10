@@ -23,12 +23,16 @@ void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg) {
         last_shutdown_time = now;
 
         std::lock_guard<std::mutex> lock(bms_mutex);
+        ROS_ERROR("bms count: %i", bmses.size());
+        size_t disconnectedCount = 0;
         for (auto bms : bmses) {
             if (bms && bms->isOpen()) {
                 bms->sendShutdown();
                 ROS_INFO("Shutdown command sent");
+                ++disconnectedCount;
             }
         }
+        ROS_ERROR("bms disconnected count: %i", ++disconnectedCount);
     }
 }
 ros::NodeHandle* g_nh = nullptr;

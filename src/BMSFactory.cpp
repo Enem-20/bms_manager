@@ -22,7 +22,7 @@ void BMSFactory::closeBMSes(std::vector<serial::BMS*>& bmses) {
 std::vector<serial::BMS*> BMSFactory::scanForBMS(std::vector<serial::BMS*>& bmses,
                                                 const std::string& path,
                                                 ros::NodeHandle& nh) {
-    std::lock_guard<std::mutex> lock(bmses_mutex); // критическая секция
+    std::lock_guard<std::mutex> lock(bmses_mutex);
 
     std::regex tty_regex(R"(ttyUSB\d+)");
     std::vector<serial::BMS*> active_bmses;
