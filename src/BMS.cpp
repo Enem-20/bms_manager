@@ -66,10 +66,10 @@ BMS::BMS(ros::NodeHandle* nodeHandle, const std::string &port,
     checkAnswerable();
     ROS_INFO("After: checkAnswerable();");
     updateCallback({});
-    _publishTimer = _nodeHandle->createTimer(ros::Duration(1.0), &BMS::publishCallback, this);
-    _updateTimer = _nodeHandle->createTimer(ros::Duration(2.0), &BMS::updateCallback, this);
+    _publishTimer = _nodeHandle->createTimer(ros::Duration(0.3), &BMS::publishCallback, this);
+    _updateTimer = _nodeHandle->createTimer(ros::Duration(0.3), &BMS::updateCallback, this);
 }
-
+ 
 BMS::BMS(const std::string &port, ros::NodeHandle* nodeHandle) 
     : Serial()
     , _nodeHandle(nodeHandle)
@@ -196,7 +196,7 @@ size_t BMS::sendShutdown()  {
     size_t readByteCount = 0;
     std::vector<uint8_t> response;
     try {
-        //std::lock_guard<std::mutex> _guard(mut);
+        std::lock_guard<std::mutex> _guard(mut);
         //std::lock_guard<std::mutex>(&mut);
         byteCount = write(shutdown_cmd, sizeof(shutdown_cmd));
         //readByteCount = read(response, 200);

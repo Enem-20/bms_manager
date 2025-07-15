@@ -85,7 +85,7 @@ std::vector<serial::BMS*> BMSFactory::scanForBMS(std::vector<serial::BMS*>& bmse
         try {
             ROS_INFO("Trying to initialize new BMS at %s", devicePath.c_str());
             auto* bms = new serial::BMS(&nh, devicePath, 9600,
-                                        serial::Timeout::simpleTimeout(2000),
+                                        serial::Timeout::simpleTimeout(500),
                                         serial::eightbits,
                                         serial::parity_none,
                                         serial::stopbits_one,

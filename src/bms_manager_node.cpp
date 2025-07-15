@@ -3,6 +3,7 @@
 #include <mutex>
 #include <thread>
 #include <future>
+#include <signal.h>
 
 #include <ros/ros.h>
 #include <mavros_msgs/RCIn.h>
@@ -14,14 +15,18 @@
 ros::Time last_shutdown_time = ros::Time(0);
 std::vector<serial::BMS*> bmses;
 std::mutex bms_mutex;
+ros::Time lastRcTime = ros::Time(0);
+ros::Timer watchdog;
 
 void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg) {
-    if (msg->channels.size() < 10) return;
+   lastRcTime = ros::Time::now();    
+if (msg->channels.size() < 10) return;
 
     uint16_t ch10 = msg->channels[9];
     ros::Time now = ros::Time::now();
+    
 
-    if (ch10 > 1899 && (now - last_shutdown_time).toSec() >= 5.0) {
+    if (ch10 > 1899 && (now - last_shutdown_time).toSec() >= 0.0) {
         last_shutdown_time = now;
         std::vector<std::future<void>> futures;
         {
@@ -49,6 +54,13 @@ void rc_callback(const mavros_msgs::RCIn::ConstPtr& msg) {
 }
 ros::NodeHandle* g_nh = nullptr;
 
+void checkAndShutdownRc(const ros::TimerEvent&) {
+    ros::Duration delta = ros::Time::now()- lastRcTime;
+    if(delta.toSec() > 5.0) {
+        std::exit(1);
+    }
+}
+
 void checkBMSPorts(const ros::TimerEvent&) {
     std::lock_guard<std::mutex> lock(bms_mutex);
 
@@ -74,6 +86,7 @@ int main(int argc, char **argv) {
     MavToPublisher::getInstance(&nh);
     ros::Subscriber rc_sub = nh.subscribe("/mavros/rc/in", 10, rc_callback);
     ros::Timer bms_check_timer = nh.createTimer(ros::Duration(5.0), checkBMSPorts);
+    watchdog = nh.createTimer(ros::Duration(0.5), checkAndShutdownRc);
 
     ros::AsyncSpinner spinner(6);
     spinner.start();

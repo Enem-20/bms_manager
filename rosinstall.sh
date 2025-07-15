@@ -5,13 +5,20 @@ rm -rf build devel
 
 echo MAKE
 source /opt/ros/noetic/setup.bash
-catkin_make
+catkin_make install
 
-cp -f /home/ubuntu/catkin_ws/src/bms_manager/bms_manager.service /etc/systemd/system/bms_manager.service
+chmod +x /home/ubuntu/catkin_ws/src/bms_manager_setup.bash
 
+rosrun robot_upstart install bms_manager/launch/bms_manager_node.launch \
+        --job bms_manager \
+        --user ubuntu \
+        --setup /home/ubuntu/catkin_ws/install/setup.bash \
+        --wait
+
+systemctl daemon-reexec
 systemctl daemon-reload
 
 systemctl stop bms_manager
 
-systemctl enable bms_manager.service
-systemctl start bms_manager.service
+systemctl enable bms_manager
+systemctl start bms_manager
