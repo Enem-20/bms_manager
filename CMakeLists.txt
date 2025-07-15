@@ -33,3 +33,12 @@ add_executable(rc_emulator_node src/rc_emulator_node.cpp)
 target_link_libraries(rc_emulator_node
   ${catkin_LIBRARIES}
 )
+
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
+
+install(TARGETS
+  bms_manager_node
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
